@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
+	<classpathentry kind="lib" path="libs/mozartspaces/mozartspaces-dist-2.3-SNAPSHOT-r21c82ce88e5456-all-with-dependencies.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/DataGenerator"/>
+	<classpathentry kind="lib" path="libs/gigaspace/blobstore.jar"/>
+	<classpathentry kind="lib" path="libs/gigaspace/com.springsource.org.aopalliance-1.0.0.jar"/>
+	<classpathentry kind="lib" path="libs/gigaspace/commons-logging-1.1.3.jar"/>
+	<classpathentry kind="lib" path="libs/gigaspace/gs-openspaces.jar"/>
+	<classpathentry kind="lib" path="libs/gigaspace/gs-runtime.jar"/>
+	<classpathentry kind="lib" path="libs/gigaspace/spring-aop-4.1.1.RELEASE.jar"/>
+	<classpathentry kind="lib" path="libs/gigaspace/spring-aspects-4.1.1.RELEASE.jar"/>
+	<classpathentry kind="lib" path="libs/gigaspace/spring-beans-4.1.1.RELEASE.jar"/>
+	<classpathentry kind="lib" path="libs/gigaspace/spring-context-4.1.1.RELEASE.jar"/>
+	<classpathentry kind="lib" path="libs/gigaspace/spring-context-support-4.1.1.RELEASE.jar"/>
+	<classpathentry kind="lib" path="libs/gigaspace/spring-core-4.1.1.RELEASE.jar"/>
+	<classpathentry kind="lib" path="libs/gigaspace/spring-expression-4.1.1.RELEASE.jar"/>
+	<classpathentry kind="lib" path="libs/gigaspace/spring-tx-4.1.1.RELEASE.jar"/>
+	<classpathentry kind="lib" path="libs/klaim/klava_1704.jar"/>
+	<classpathentry kind="lib" path="libs/tupleware/tupleware.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
