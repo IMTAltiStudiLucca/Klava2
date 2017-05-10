@@ -1,0 +1,112 @@
+Crittografia delle tuple
+------------------------
+
+in Node.wakeUpProcess, il processo in attesa della tupla non viene
+svegliato subito, ma viene richiamato il metodo localMatch su un
+oggeto LocalMatcher. 
+Di default questo restituisce sempre true.
+Per la crittografia invece viene dato al Node un LocalMatcher personalizzato
+(KCipherLocalMatcher) che richiama matchTuplex sulla tupla ricevuta.
+
+Se questo metodo ritorna falso, il processo non viene tolto dai processi
+in attesa.
+
+Il metodo localMatch di KCipherLocalMatcher fa le seguenti operazioni:
+
+- fa una copia della tupla originale (in modo che eventualmente, se la
+tupla non va bene, si puo' sempre tornare indietro). Per tupla originale
+si intende la tupla che corrisponde al this. In effetti si agisce
+sempre sulla copia, poi eventualmente se tutto e' andato a buon fine
+si ricopia la copia sulla tupla originale.
+- per ogni elemento della tupla, se si tratta di un KCipher ne crea uno
+nuovo (toDecode) che mette immediatamente nel vettore della tupla copia.
+Tale elemento nuovo viene creato col costruttore di copia di KCipher.
+- viene effettuata la decifratura dell'elelemnto cifrato in toDecode.
+- Se l'elemento decifrato non e' dello stesso tipo (classe) dell'elemento
+del template, il match fallisce
+- altrimenti, se l'elemento del template e' un formale, si aggiorna i vari
+campi di toDecode, ed in particolare
+toDecode.ref viene messo uguale all'elemento decifrato
+toDecode.formal viene settato a false
+toDecode.encItem viene messo a null
+- se non e' un formale viene controllato che i due elementi siano uguali
+(col metodo equals), altrimenti viene restituito false.
+
+Se tutto e' andato bene, il vettore items della tupla originale viene
+messo uguale a quello della tupla su cui si sono fatte le varie operazioni.
+
+Per il matching locale il principio e' lo stesso: si utilizza un oggetto
+LocalTupleSpaceMatcher, a cui vengono delegate le richieste di in e di
+read.
+
+Verra' poi estesa questa classe KCipherLocalTupleSpaceMatcher in modo
+da richiamare matchTuplex dopo aver recuperato una tupla.
+
+DANIELE
+------
+
+KlavaProcessx 
+estende KlavaProcess aggiungendo solamente un KStore, ks 
+
+KCipher  Tutto quello che si poteva fare fino ad ora continua a
+funzionare, in più ci sono le seguenti possibilità:  un KCipher può
+essere creato con i nuovi costruttori passandogli il KeyStore (ks) al
+posto della chiave recuperata da un file (cosa che dovrà sparire), in
+aggiunta può essere passato anche un booleano che serve per sapere se
+utilizzare o meno la chiave di default settata nel keystore (non è
+detto che ce ne sia una), se la chiave di default non c'è verrà
+richiesta comunque all'utente. Oltra al booleano si può specificare
+l'algoritmo di cifrature da utilizzare (al momento solo DES). Tutti
+questi costruttori usano il metodo di KCipher desEnc (dato che per ora
+c'è solo DES, si potrà aggiungere 3DES e RSA quando ci sarà)  C'è un
+nuovo metodo desDec che decifra il KCipher e restituisce il dato in
+chiaro sottoforma di byte[ ].   L'implementazione di questo metodo è
+provvisoria in quanto dovrà poi usare il KStore quando avrai fatto le
+modifiche in MatchTuplex (o LocalMatcher)
+
+Tuplex  l'ho modificato in modo tale che richiami desDec di KCipher
+per decifrare, però usa ancora la chiave su file e non il KStore,
+quando avremo accesso al KStore desDec() diventerà desDec(KStore)
+presumo.
+
+KStore  come attributi ha un KeyStore che contirne le chiavi, le
+chiavi di default e i booleani che dicono se usare o meno le chiavi di
+default (forse si poteva fare a meno dei bool se si assumeva che se la
+chiave era null non andava usata, ma le assunzioni ci hanno già dato
+troppi problemi)  Il KStore deve essere già esistente e memorizzato in
+un file, va infatti creato con i tools di java. Il costruttore chiede
+il nome del file dove è memorizzato quindi la password e fa vedere le
+chiavi che contiene.
+
+listKey() elenca le chiavi del KS
+
+getKey() restituisce una chiave del KS
+
+setEncKey() setta la chiave di cifratura da uasare di default
+setDecKey() quella di decifratura
+
+useEncKey(boolean) restituisce una chiave per cifrare chiedendola
+all'utente se bool=false o se non c'è chiave di default
+useDecKey(boolean)  come sopra
+
+importKey() serve per importare le chiavi memorizzate su file dentro
+il KS (l'ho usato per importare quelle usate da noi fino ad ora)
+
+genKey() genera una chiave e la aggiunge al KS
+
+addKey(Key) aggiunge la chiave al KS, è usato da gen_Key e da
+importKey
+
+delKey() cancella una chiave dal KS
+
+save() salva il KS in un file proteggendolo con password
+
+Altre note: 
+un keystore va creato da terminale con i keytool e si può creare solo 
+creando anche una chiave che poi può essere cancellata se non serve. 
+
+keytool -list -keystore "nomefile" -storetype JCEKS 
+elenca le chiavi del Keystore 
+
+keytool -genkey -alias "nomechiave" -keystore "nomefile" -storetype "JCEKS" 
+genera una chiave e anche il Keystore se non esiste già 

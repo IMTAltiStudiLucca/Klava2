@@ -4,7 +4,8 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/DataGenerator"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/TSProxies"/>
-	<classpathentry kind="lib" path="/TSProxies/libs/klaim/klava_1704.jar"/>
 	<classpathentry kind="lib" path="/TSProxies/libs/tupleware/tupleware.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/imc"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/klava"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -55,35 +55,22 @@ public class KlaimImpSearchTest {
 	private static void beginScenario(int numberOfElements, int numberOfWorkers) throws IMCException, KlavaException
 	{			
 		// create server physical locality
-		//PhysicalLocality serverPLoc = new PhysicalLocality("tcp-127.0.0.1:6001");
-		//KlavaNode serverNode = new KlavaNode(serverPLoc, TupleSpaceVector.class); //new Net(serverPLoc);  TupleSpaceVector
-		
 		PhysicalLocality serverPLoc = new PhysicalLocality("tcp-127.0.0.1:6001");
-		KlavaNode serverNode = new Net(serverPLoc);
+		KlavaNode serverNode = new KlavaNode(serverPLoc); 
 		
 		Hashtable<String, ArrayList<Object>> settings = new Hashtable<>();
 		
 		// settings for TupleSpaceSQLiteDB
 	    ArrayList<Object> searchTupleTemplate = new ArrayList<Object>(Arrays.asList(String.class, String.class, String.class));
 		settings.put("SearchTuple", searchTupleTemplate);
-	    
-		// settings for hashtable (also for redis)
-		//B[] searchTupleTemplate = new Object[]{String.class, String.class, String.class};
-	/*	settings.put("SearchTuple_ttt", new Boolean[]{true, true, true});	 
-		settings.put("SearchTuple_ttf", new Boolean[]{true, true, false});	 
-		settings.put("SearchTuple_tff", new Boolean[]{true, false, false});
-		TupleSpaceRedisDB.clearDB();*/
 
-		serverNode.setSettings(settings);
 		
 		// create all worker nodes
 		ArrayList<KlavaNode> workerNodes = new ArrayList<KlavaNode>();
 		for(int i = 0; i< numberOfWorkers; i++ )
 		{
-			//PhysicalLocality workPLoc = new PhysicalLocality("tcp-127.0.0.1:600" + (i+2));
-			//KlavaNode workerNode = new KlavaNode(workPLoc, TupleSpaceVector.class); // new ClientNode(serverPLoc);
-			KlavaNode workerNode = new ClientNode(serverPLoc);
-			//workerNode.setSettings(settings);
+			PhysicalLocality workPLoc = new PhysicalLocality("tcp-127.0.0.1:600" + (i+2));
+			KlavaNode workerNode = new KlavaNode(workPLoc); 
 			workerNodes.add(workerNode);
 		}
 		

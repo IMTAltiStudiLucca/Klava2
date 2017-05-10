@@ -1,0 +1,124 @@
+Created object: object = 
+  original class = 
+    (momitest.Ctest1_m-DEFINED)
+    (momitest.Ctest1_p-DEFINED)
+    (momitest.Ctest1_n-DEFINED)
+  methods =
+    (momitest.Ctest1_m-DEFINED)
+    (momitest.Ctest1_p-DEFINED)
+    (momitest.Ctest1_n-DEFINED)
+  next = null
+result of m: 100
+result of m: 200
+Ctest1.n()
+result of n: 200
+Applying mixin M to class C
+MC: class = 
+  (momitest.Mtest1_m-REDEFINED)
+  (momitest.Ctest1_p-DEFINED)
+  (momitest.Ctest1_n-DEFINED)
+Created object: object = 
+  original class = 
+    (momitest.Mtest1_m-REDEFINED)
+    (momitest.Ctest1_p-DEFINED)
+    (momitest.Ctest1_n-DEFINED)
+  methods =
+    (momitest.Mtest1_m-REDEFINED)
+    (momitest.Ctest1_p-DEFINED)
+    (momitest.Ctest1_n-DEFINED)
+  next =
+    object = 
+      original class = 
+        (momitest.Ctest1_m-DEFINED)
+        (momitest.Ctest1_p-DEFINED)
+        (momitest.Ctest1_n-DEFINED)
+      methods =
+        (momitest.Mtest1_m-REDEFINED)
+        (momitest.Ctest1_p-DEFINED)
+        (momitest.Ctest1_n-DEFINED)
+      next = null
+Mtest1.m()
+Ctest1.n()
+result of m: 300
+Applying mixin M to class MC
+MMC: class = 
+  (momitest.Mtest1_m-REDEFINED)
+  (momitest.Ctest1_p-DEFINED)
+  (momitest.Ctest1_n-DEFINED)
+Created object: object = 
+  original class = 
+    (momitest.Mtest1_m-REDEFINED)
+    (momitest.Ctest1_p-DEFINED)
+    (momitest.Ctest1_n-DEFINED)
+  methods =
+    (momitest.Mtest1_m-REDEFINED)
+    (momitest.Ctest1_p-DEFINED)
+    (momitest.Ctest1_n-DEFINED)
+  next =
+    object = 
+      original class = 
+        (momitest.Mtest1_m-REDEFINED)
+        (momitest.Ctest1_p-DEFINED)
+        (momitest.Ctest1_n-DEFINED)
+      methods =
+        (momitest.Mtest1_m-REDEFINED)
+        (momitest.Ctest1_p-DEFINED)
+        (momitest.Ctest1_n-DEFINED)
+      next =
+        object = 
+          original class = 
+            (momitest.Ctest1_m-DEFINED)
+            (momitest.Ctest1_p-DEFINED)
+            (momitest.Ctest1_n-DEFINED)
+          methods =
+            (momitest.Mtest1_m-REDEFINED)
+            (momitest.Ctest1_p-DEFINED)
+            (momitest.Ctest1_n-DEFINED)
+          next = null
+Mtest1.m()
+Ctest1.n()
+Mtest1.m()
+Ctest1.n()
+result of m: 400
+Applying mixin M2 to class MC
+M2MC: class = 
+  (momitest.Mtest1_m-REDEFINED)
+  (momitest.Ctest1_p-DEFINED)
+  (momitest.Ctest1_n-DEFINED)
+Created object: object = 
+  original class = 
+    (momitest.Mtest1_m-REDEFINED)
+    (momitest.Ctest1_p-DEFINED)
+    (momitest.Ctest1_n-DEFINED)
+  methods =
+    (momitest.Mtest1_m-REDEFINED)
+    (momitest.Ctest1_p-DEFINED)
+    (momitest.Ctest1_n-DEFINED)
+  name clashes =
+    (momitest.M2test1_n-DEFINED)
+  next =
+    object = 
+      original class = 
+        (momitest.Mtest1_m-REDEFINED)
+        (momitest.Ctest1_p-DEFINED)
+        (momitest.Ctest1_n-DEFINED)
+      methods =
+        (momitest.Mtest1_m-REDEFINED)
+        (momitest.Ctest1_p-DEFINED)
+        (momitest.Ctest1_n-DEFINED)
+      next =
+        object = 
+          original class = 
+            (momitest.Ctest1_m-DEFINED)
+            (momitest.Ctest1_p-DEFINED)
+            (momitest.Ctest1_n-DEFINED)
+          methods =
+            (momitest.Mtest1_m-REDEFINED)
+            (momitest.Ctest1_p-DEFINED)
+            (momitest.Ctest1_n-DEFINED)
+          next = null
+Mtest1.m()
+Ctest1.n()
+result of m: 500
+Ctest1.n()
+result of n: 500

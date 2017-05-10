@@ -1,0 +1,98 @@
+<?xml version="1.0"?>
+<!-- Klava build file - Lorenzo Bettini -->
+
+<project name="klava" default="compile" basedir=".">
+	<description>
+			Klava build file
+	</description>
+
+	<property name="src" location="." />
+
+	<property name="bin" location="bin" />
+
+	<property name="examples" location="examples/src" />
+
+	<property name="tests" location="tests" />
+
+	<path id="klava.path">
+		<pathelement location="${bin}" />
+		<pathelement path="${java.class.path}" />
+	</path>
+
+	<!-- - - - - - - - - - - - - - - - - - 
+          target: init                      
+         - - - - - - - - - - - - - - - - - -->
+	<target name="init">
+		<tstamp />
+		<mkdir dir="${bin}" />
+	</target>
+
+
+
+	<!-- ================================= 
+          target: compile              
+         ================================= -->
+	<target name="compile" depends="init" description="--> compile sources">
+		<javac srcdir="${src}" destdir="${bin}" debug="on" />
+	</target>
+
+	<!-- ================================= 
+	      target: examples              
+         ================================= -->
+	<target name="examples" depends="compile" description="--> compile examples">
+		<mkdir dir="${bin}/${examples}" />
+		<javac srcdir="${examples}" destdir="${bin}/${examples}" debug="on">
+			<classpath refid="klava.path" />
+		</javac>
+	</target>
+
+	<!-- ================================= 
+	      target: tests              
+         ================================= -->
+	<target name="tests" depends="compile" description="--> compile tests">
+		<javac srcdir="${tests}" destdir="${bin}" debug="on">
+			<classpath refid="klava.path" />
+		</javac>
+	</target>
+
+
+	<!-- ================================= 
+          target: junit              
+         ================================= -->
+	<target name="junit" depends="tests" description="--> run junit tests">
+		<mkdir dir="results" />
+		<junit printsummary="withOutAndErr" haltonerror="on" haltonfailure="on" showoutput="true">
+			<classpath>
+					<pathelement location="${bin}"/>
+			</classpath>
+			<formatter type="plain" />
+
+			<test name="klava.tests.junit.TupleTest" haltonfailure="no" outfile="result">
+			</test>
+
+			<test name="klava.tests.junit.ForwardRequestTest" haltonfailure="no" outfile="result">
+			</test>
+
+			<!--
+    		<batchtest todir="results">
+    		    <fileset dir="${tests}">
+    		      <include name="**/*Test*.java"/>
+    		      <exclude name="**/AllTests.java"/>
+    		    </fileset>
+		    </batchtest>
+		    -->
+			<!-- <classpath refid="klava.path" /> -->
+		</junit>
+	</target>
+
+	<!-- ================================= 
+          target: clean              
+         ================================= -->
+	<target name="clean" description="--> removes previous build">
+		<delete includeemptydirs="true">
+			<fileset dir="${bin}" />
+		</delete>
+	</target>
+
+
+</project>

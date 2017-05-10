@@ -17,7 +17,8 @@
 	<classpathentry kind="lib" path="libs/gigaspace/spring-core-4.1.1.RELEASE.jar"/>
 	<classpathentry kind="lib" path="libs/gigaspace/spring-expression-4.1.1.RELEASE.jar"/>
 	<classpathentry kind="lib" path="libs/gigaspace/spring-tx-4.1.1.RELEASE.jar"/>
-	<classpathentry kind="lib" path="libs/klaim/klava_1704.jar"/>
 	<classpathentry kind="lib" path="libs/tupleware/tupleware.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/klava"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/imc"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

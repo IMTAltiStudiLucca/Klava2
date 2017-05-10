@@ -1,0 +1,54 @@
+2002-10-21  Lorenzo Bettini  <bettini@dsi.unifi.it>
+
+        * MoMiObject.java: include internal_methods
+        (dynamic_name_clash) simply inspect the table name_clashes.
+        (update_self) treat internal_self_table differently.
+
+        * Mixin.java: original_methods removed
+        (apply) removed the case for expected.  populate name_clashes.
+        (update_obj_methods) general method for updating the method tables
+        of an object considering also name clashes.
+
+2002-10-18  Lorenzo Bettini  <bettini@dsi.unifi.it>
+
+        * also types are printed with indentation
+
+        * WithMethods.java: (toString) print classes and mixins
+
+2002-10-17  Lorenzo Bettini  <bettini@dsi.unifi.it>
+
+	* MoMiObject.java (_toString): print object in indented way
+
+	* RecordType.java (compare): correctly return false
+	if a test on elements fails BUGFIX.
+	Use eq for testing the same size of record type
+
+	* MethodType.java (compare): correctly return false
+	if a test on parameters fails BUGFIX.  Only use equality on
+	return and parameter types
+
+	* MoMiMethod.java (MoMiMethod): serializable
+
+	* WithMethods.java (WithMethods): serializable
+
+	* MoMiType.java: serializable
+
+	* MoMiObject.java (update_self): in case there's no recursion set
+	the next to this
+
+2002-10-16  Lorenzo Bettini  <bettini@dsi.unifi.it>
+
+	* Mixin.java (update_methods_of_next): check for the presence
+	of defined method in original_class of original_class
+
+	* MoMiObject.java: (dynamic_name_clash) check for the presence
+	of defined method in original_class of original_class
+
+2002-10-15  Lorenzo Bettini  <bettini@dsi.unifi.it>
+
+	* Mixin.java (apply): avoid to redefine dynamic name clashes
+	(set_new_obj_methods): avoid to redefine dynamic name clashes
+
+	* MoMiObject.java: Use also a table for next
+	(update_self) carefully treat differently dynamic name clashes
+

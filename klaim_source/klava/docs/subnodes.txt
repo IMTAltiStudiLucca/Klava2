@@ -1,0 +1,13 @@
+Per il momento i subnodes non vengono terminati quando viene terminato
+il supernodo.  Comunque quando tutti i nodi di un'applicazione sono terminati
+l'applicazione richaima System.exit(0) e quindi anche gli altri vengono terminati.
+
+Pero' per le applet cosa succederebbe?
+I sottonodi rimarrebbero attivi e questo non andrebbe bene.
+
+Quindi e' meglio terminare anche i sottonodi per il momento.
+
+I sottonodi vengono terminati anche se la connessione cade.
+
+Quando poi si avranno vere e proprie sottoreti allora bastera' disconnetterli
+e poi decideranno loro cosa fare.

@@ -1,0 +1,163 @@
+Created object of class C: object = 
+  original class = 
+    (momitest.Ctest1_m-DEFINED)
+    (momitest.Ctest1_p-DEFINED)
+    (momitest.Ctest1_n-DEFINED)
+  methods =
+    (momitest.Ctest1_m-DEFINED)
+    (momitest.Ctest1_p-DEFINED)
+    (momitest.Ctest1_n-DEFINED)
+  next = null
+Ctest1.p()
+Ctest1.n()
+result of p(): 10
+Applying: M2 <> (M <> C)
+MCC: class = 
+  (momitest.Ctest1_m-DEFINED)
+  (momitest.Ctest1_p-DEFINED)
+  (momitest.M2test2_n-REDEFINED)
+Created object of class M2 <> (M <> C): object = 
+  original class = 
+    (momitest.Ctest1_m-DEFINED)
+    (momitest.Ctest1_p-DEFINED)
+    (momitest.M2test2_n-REDEFINED)
+  methods =
+    (momitest.Ctest1_m-DEFINED)
+    (momitest.Ctest1_p-DEFINED)
+    (momitest.M2test2_n-REDEFINED)
+  next =
+    object = 
+      original class = 
+        (momitest.Ctest1_m-DEFINED)
+        (momitest.Ctest1_p-DEFINED)
+        (momitest.Mtest2_n-REDEFINED)
+      methods =
+        (momitest.Ctest1_m-DEFINED)
+        (momitest.Ctest1_p-DEFINED)
+        (momitest.M2test2_n-REDEFINED)
+      next =
+        object = 
+          original class = 
+            (momitest.Ctest1_m-DEFINED)
+            (momitest.Ctest1_p-DEFINED)
+            (momitest.Ctest1_n-DEFINED)
+          methods =
+            (momitest.Ctest1_m-DEFINED)
+            (momitest.Ctest1_p-DEFINED)
+            (momitest.M2test2_n-REDEFINED)
+          next = null
+Ctest1.p()
+M2test2.n()
+Mtest2.n()
+result of p(): 3
+Applying: M <> (M2 <> (M <> C))
+MCCC: class = 
+  (momitest.Ctest1_m-DEFINED)
+  (momitest.Ctest1_p-DEFINED)
+  (momitest.Mtest2_n-REDEFINED)
+Created object of class M <> (M2 <> (M <> C)): object = 
+  original class = 
+    (momitest.Ctest1_m-DEFINED)
+    (momitest.Ctest1_p-DEFINED)
+    (momitest.Mtest2_n-REDEFINED)
+  methods =
+    (momitest.Ctest1_m-DEFINED)
+    (momitest.Ctest1_p-DEFINED)
+    (momitest.Mtest2_n-REDEFINED)
+  next =
+    object = 
+      original class = 
+        (momitest.Ctest1_m-DEFINED)
+        (momitest.Ctest1_p-DEFINED)
+        (momitest.M2test2_n-REDEFINED)
+      methods =
+        (momitest.Ctest1_m-DEFINED)
+        (momitest.Ctest1_p-DEFINED)
+        (momitest.Mtest2_n-REDEFINED)
+      next =
+        object = 
+          original class = 
+            (momitest.Ctest1_m-DEFINED)
+            (momitest.Ctest1_p-DEFINED)
+            (momitest.Mtest2_n-REDEFINED)
+          methods =
+            (momitest.Ctest1_m-DEFINED)
+            (momitest.Ctest1_p-DEFINED)
+            (momitest.Mtest2_n-REDEFINED)
+          next =
+            object = 
+              original class = 
+                (momitest.Ctest1_m-DEFINED)
+                (momitest.Ctest1_p-DEFINED)
+                (momitest.Ctest1_n-DEFINED)
+              methods =
+                (momitest.Ctest1_m-DEFINED)
+                (momitest.Ctest1_p-DEFINED)
+                (momitest.Mtest2_n-REDEFINED)
+              next = null
+Ctest1.p()
+Mtest2.n()
+result of p(): 2
+Applying: M2 <> (M2 <> (M <> C))
+MCCC2: class = 
+  (momitest.Ctest1_m-DEFINED)
+  (momitest.Ctest1_p-DEFINED)
+  (momitest.M2test2_n-REDEFINED)
+Created object of class M2 <> (M2 <> (M <> C)): object = 
+  original class = 
+    (momitest.Ctest1_m-DEFINED)
+    (momitest.Ctest1_p-DEFINED)
+    (momitest.M2test2_n-REDEFINED)
+  methods =
+    (momitest.Ctest1_m-DEFINED)
+    (momitest.Ctest1_p-DEFINED)
+    (momitest.M2test2_n-REDEFINED)
+  next =
+    object = 
+      original class = 
+        (momitest.Ctest1_m-DEFINED)
+        (momitest.Ctest1_p-DEFINED)
+        (momitest.M2test2_n-REDEFINED)
+      methods =
+        (momitest.Ctest1_m-DEFINED)
+        (momitest.Ctest1_p-DEFINED)
+        (momitest.M2test2_n-REDEFINED)
+      next =
+        object = 
+          original class = 
+            (momitest.Ctest1_m-DEFINED)
+            (momitest.Ctest1_p-DEFINED)
+            (momitest.Mtest2_n-REDEFINED)
+          methods =
+            (momitest.Ctest1_m-DEFINED)
+            (momitest.Ctest1_p-DEFINED)
+            (momitest.M2test2_n-REDEFINED)
+          next =
+            object = 
+              original class = 
+                (momitest.Ctest1_m-DEFINED)
+                (momitest.Ctest1_p-DEFINED)
+                (momitest.Ctest1_n-DEFINED)
+              methods =
+                (momitest.Ctest1_m-DEFINED)
+                (momitest.Ctest1_p-DEFINED)
+                (momitest.M2test2_n-REDEFINED)
+              next = null
+Ctest1.p()
+M2test2.n()
+M2test2.n()
+Mtest2.n()
+result of p(): 3
+Created object of class C: object = 
+  original class = 
+    (momitest.Ctest1_m-DEFINED)
+    (momitest.Ctest1_p-DEFINED)
+    (momitest.Ctest1_n-DEFINED)
+  methods =
+    (momitest.Ctest1_m-DEFINED)
+    (momitest.Ctest1_p-DEFINED)
+    (momitest.Ctest1_n-DEFINED)
+  next = null
+Ctest1.p()
+Ctest1.n()
+result of p(): 10

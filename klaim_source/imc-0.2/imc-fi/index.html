@@ -1,0 +1,154 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=US-ASCII">
+<title>IMC - Implementing Mobile Calculi</title>
+</head>
+<body>
+<h1>IMC - Implementing Mobile Calculi</h1>
+
+<p>IMC is a Java framework for implementing distributed applications
+possibly with code mobility. The name is due to the fact that originally
+this framework was built for helping implementing the run time system of
+mobile calculi implementation, i.e., calculi accessing remote resources
+and nodes, and, possibly, exchanging code, processes and mobile agents.
+Of course, if you don't need code mobility features you can simply
+ignore them and use IMC for building any distributed and network
+application.</p>
+
+<p>IMC is Open Source and Free Software, under <a href="COPYING">GPL</a>.</p>
+
+<p>NOTICE: IMC is targetted to programmers of distributed
+application, not to end users.</p>
+
+<p>IMC is developed at <a href="http://www.dsi.unifi.it">Dipartimento
+di Sistemi e Informatica, Universita' di Firenze, Italy</a> from <a
+	href="http://music.dsi.unifi.it"> the Concurrency and Mobility
+Group</a>.</p>
+
+<p><font color="green">IMC uses generics, thus it requires Java 5.</font></p>
+
+<p><font color="red">IMC is still in development state, thus
+some parts are likely to change in future versions.</font></p>
+
+<h2>Rationale</h2>
+
+<p>Many implementations of mobile code languages have been proposed,
+and very often the language used for implementation is Java because it
+provides many useful features for building network applications with
+mobile code. However, these Java mechanisms still require a big
+programming effort, and so they can be thought of as "low-level"
+mechanisms. Because of this, many existing Java-based distributed
+systems tend to re-implement from scratch many components that are
+typical and recurrent in distributed and mobile applications.</p>
+
+<p>To support the implementation of languages for global computing,
+we have been working on IMC that can be used as a framework for the
+implementation of different distributed mobile systems. Such a framework
+aims at providing the necessary tools for implementing new language
+run-time systems directly derived from calculi for mobility. The basic
+idea and motivation of this framework is that the implementer of a new
+language would need concentrating on the parts that are really specific
+of his system, while relying on the framework for the recurrent standard
+mechanisms. The development of prototype implementations should then be
+quicker and the programmers should be relieved from dealing with
+low-level details. The proposed framework aims at providing all the
+required functionalities and abstractions for arbitrary components to
+communicate and move in a distributed setting.</p>
+
+<p>IMC provides concrete implementations for the standard and most
+used functionalities that should fit most Java mobile framework
+requirements (e.g., Java byte-code mobility and standard network
+communication mechanisms). A user of IMC can customize parts of the
+framework by providing its own implementations for the interfaces used
+in the package. In this respect, the IMC framework can be
+straightforwardly used if no specific advanced feature is needed. The
+framework is however open to customizations if these are required by
+specific mobility systems. Customization of the framework can be
+achieved by taking advantage of design patterns that are used throughout
+the packages.</p>
+
+<p>The framework was designed to achieve both <em>transparency</em>
+and <em>adaptability</em>. For instance, for code mobility, the
+framework provides all the basic functionalities for making code
+mobility transparent to the programmer: all issues related to code
+marshalling and code dispatch are handled automatically by the classes
+of the framework. Its components are designed to deal with object
+marshalling, code migration, and dynamic loading of code. The framework
+can also be adapted to deal with many network topologies (flat,
+hierarchical, peer-to-peer networks, etc.) and with message dispatching
+and forwarding. Furthermore, the implementer can build his own
+communication protocols by specializing the protocol base classes
+provided by the framework. Thus, the developer will only have to
+implement the parts that are relevant to the system he wants to build:
+typically, he will develop the communication protocol which best matches
+application-specific requirements. Connections and network topology are
+dealt with directly from within the framework. However, the developer
+may access the current state of his application with listeners to events
+that the classes of the framework generate.</p>
+
+<h2>Download &amp; Installation</h2>
+
+<p>IMC can be downloaded from the site: <a
+	href="http://sourceforge.net/projects/imc-fi">http://sourceforge.net/projects/imc-fi</a>
+</p>
+
+<p>Of couse, being an open source software, IMC comes with sources
+(although the archive contains also the precompiled binaries). In
+particular, the archive you download consists of the following (main)
+directories:</p>
+<ul>
+	<li><strong>bin</strong> - contains the precompiled .class files
+	for all the sources (including examples and junit tests). Probably, the
+	only binaries you'll need are the ones in the org subdirectory
+	representing the binaries of the framework itself.</li>
+	<li><strong>src</strong> - contains the sources of the framework
+	itself.</li>
+	<li><strong>doc</strong> - contains the Javadoc documentation of
+	the classes of the framework.</li>
+	<li><strong>examples</strong> - contains the sources of the
+	examples.</li>
+	<li><strong>tests</strong> - contains the sources of the junit
+	tests.</li>
+</ul>
+<p></p>
+
+<p>You can also access IMC's sources through the CVS repository,
+which contains the most up-to-date version of the framework (you can
+also browse the repository via the <a
+	href="http://imc-fi.cvs.sourceforge.net/imc-fi">web-based
+repository viewer</a>). You can retrieve the sources through from the CVS
+repository using the following commands:</p>
+<pre>
+cvs -d:pserver:anonymous@imc-fi.cvs.sourceforge.net:/cvsroot/imc-fi login
+ 
+cvs -z3 -d:pserver:anonymous@imc-fi.cvs.sourceforge.net:/cvsroot/imc-fi co -P imc
+</pre>
+<p>Further Information about accessing this CVS repository may be
+found in the document titled, <a href="http://sourceforge.net/docs/E04/">"CVS
+(Version Control for Source Code)"</a> .</p>
+
+<p>If you're an <a href="http://www.eclipse.org">Eclipse</a> user
+you might also import the project from CVS, or, if you downloaded the
+source archive you can import the project you find in the archive. In
+this case you can also run the junit tests from Eclipse (the test suite
+is called <tt>AllTests</tt>).</p>
+
+<h2>Documentation</h2>
+
+<p>Apart from the above mentioned javadoc documentation, from <a
+	href="http://sourceforge.net/projects/imc-fi">http://sourceforge.net/projects/imc-fi</a>,
+you can download the user guide (which contains many examples of
+tutorial nature).</p>
+
+<h2>Links</h2>
+
+IMC has been employed for developing a Java prototype implementation of
+a run-time system for the distributed Pi calculus,
+<a href="http://music.dsi.unifi.it/jdpi">JDpi</a>.
+Furthermore it is being used to re-engineer the current implementation of
+<a href="http://music.dsi.unifi.it/klaim">Klava</a>, the run-time system for
+Klaim.
+
+</body>
+</html>

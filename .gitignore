@@ -58,3 +58,5 @@ local.properties
 
 #logs
 *.log
+*.tlf
+*.tklf

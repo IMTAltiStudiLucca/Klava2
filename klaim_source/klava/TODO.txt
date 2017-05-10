@@ -1,0 +1,340 @@
+TODO
+----
+
+L'inizializzazione di campi come i local matcher, non andrebbero fatti
+nel costruttore (o si'?).
+
+Effettuare anche delle prove con chiavi sbagliate e recuperare anche
+tali errori; eventualmente in questi casi l'utente dovrebbe essere avvertito
+che la chiave non va bene.
+
+in Tuplex.matchTuplex desCipher.init andrebbe chiamato una volta per
+tutte, non per ogni singolo elemento, no?
+
+Quando si crea una newloc si deve avere la possibilita' di dire che
+tipo di localita' e' o comunque di settare i matcher in modo che gestisca
+i dati cifrati.
+
+testare se il duplicate funziona sulle Localita'.
+
+Testare se la gestione delle tuple come e' adesso funziona coi timeout.
+
+I ReadInThread dovrebbero avere un nome piu' significativo, quando vengono
+stampati su schermo.
+
+Il dialogo di richiesta delle chiavi dovrebbe fornire anche informazioni
+sul nodo e sul processo che richiede la chiave.
+
+Ci possono essere problemi con le directConnections se uno dei due non e'
+on-line, ma arriva piu' tardi: in questo caso il primo non riesce ad
+effettuare una direct connection ed usa quella standard, l'altro ce la
+fa.  Per quello che ce la fa ad un certo punto si verifica una nullPointer
+quando il MessageDeliverer cerca di fare un reset sullo stream di output!
+Ci vorrebbe che la connessione sia bloccante, se il nodo non e' presente
+nella rete.  Ed eventualmente anche la connessione fra due nodi che
+permettono la comunicazione diretta dovrebbe avvenire in modo sincrono,
+cioe' quando uno si mette in connessione con un altro, poi l'altro si mette
+in connessione con l'altro.  Alla fine entrambi sono connessi direttamente.
+
+Controllare che, alla richiesta di una connessione diretta, non venga
+rimessa la tupla a posto se non si puo' stabilire la connessione.
+
+I messaggi a schermo andrebbero stampati tramite un oggetto comune,
+in modo che possa essere usato anche dai MessageDeliverer e Receiver.
+
+Implementare un esempio di un processo che aggiunge manualmente una classe
+fra quelle usate.
+
+Gestire anche messaggi con Content sbagliato (vedi esempio dell'eval)
+
+Inizializzare gli object stream a livello piu' alto magari scrivendo subito
+qualcosa nello stream in modo che non rimanga bloccato il thread quando
+cerca di aprile l'input stream
+
+gestire le comunicazioni dirette anche coi NetNode!
+
+unhandledMessage dovrebbe spedire un messaggio di errore se e' arrivato un
+messaggio che non si riesce a gestire.
+
+Poi si dovrebbe rimuovere da Node i subNodes?  Si posso riutilizzare
+direttamente quelli?  Pero' newLocalities dovrebbero andare dentro i
+subNodes?  Comunque nella tabella sono memorizzati i Nodi direttamente e
+quindi non va bene per la gestione dei sottonodi che potrebbero essere
+anche remoti!
+
+Per i test automatici sarebbe anche utile poter specificare il proprio
+indirizzo IP e magari il server controlla se quell'indirizzo e' vero
+(cercando di risolverlo).  Durante la fase di login se risponde con
+false puo' anche specificare l'errore.
+
+Logout andrebbe implementato in modo piu' astratto, senza richiamare
+terminateDeliverReceiver?
+
+se la localita' fisica non viene trovata dal server il client che ha eseguito
+un'azione (sia out che in) dovrebbe rimanere bloccato.  Fino a quando
+la localita' fisica non entra nella rete?  A questo punto un out potrebbe
+davvero funzionare da ping.
+
+La traduzione delle localita' che usa waitToBeConnected andrebbe gestita un
+po' meglio soprattutto la gestione di InterruptedException.
+Inoltre forse waitToBeConnected dovrebbe essere gestita in un blocco
+synch?
+Piu' che altro si deve rimanere bloccati se non si traduce la localita'
+e non si e' connessi ad un server?
+
+Fare in modo di non mandare un messaggio alla localita' sbagliata
+gli esempi LoginLogoutSyncProc e SubUnsub possono soffrire di questo problema.
+
+Il NodeHandler dovrebbe verificare che quello che e' specificato nel
+campo source del messaggio e' realmente quello che lo sta inviando e
+non sia qualcuno che si camuffa.
+
+Se non viene richiesto l'acking dell'out?  Viene comunque inviato l'ack?
+
+Sembra che ci siano problemi su macchine particolarmente veloci:
+la unsubscribe non termina prima di una nuova subscribe: andrebbe controllato
+se e' sincronizzato.
+
+Il deliverToServer non attende la connessione al logon_server.
+Questo dovrebbe tornare utile quando saranno implementate le azioni
+bloccanti per le localita' che mancano.
+
+Le direct connection dovrebbero essere riviste perche' potrebbero non
+funzionare in una rete gerarchicha a causa del forwarding.
+Forse quindi la porta non va richiesta ma si dovrebbe proprio provare
+a stabilire una connessione direttamente.
+
+si dovrebbe tenere traccia di tutti i thread che vengono fatti partire
+per attendere per richieste che vengono da un altro nodo, come ad
+esempio InReadThread.
+
+fare usare removeRoute a removeProxy?
+
+Pensare se la propagazione e' giusto che la faccia direttamente la RoutingTable.
+
+ATTENZIONE: nel caso sia ammesso che una localita' sia registrata con due
+localita' logiche differenti, si possono avere inconsistenze fra le rotte.
+Si dovrebbe tenere memorizzata anche una lista di loc. fisiche legate a
+loc. logiche e mandare il messaggio PROPAGATE_REMOVE_LOCALITY solo quando
+si e' sicuri che non si e' piu' connessi a quella localita' fisica.
+
+Pensare anche ad una versione di unregister e disconnected a cui la localita'
+si passa direttamente noi.
+
+Sia register che disconnected andrebbero gestiti solo se richiesto (altrimenti
+gli spazi delle tuple usati non vengono mai ripuliti).
+
+Controllare in NodeHandler se locHandled puo' essere dichiarata come
+loc fisica e sistemare eventualmente lostConnection in login_handler togliendo
+il cast.
+
+Siccome gli out sono bloccanti si rischia di rimanere in attesa di un nodo
+che si e' disconnesso (puo' succedere nell'esempio della chat).
+In quel caso sarebbe meglio sbloccare il processo?
+Per fare questo nelle informazioni dei waitingProcesses si dovrebbe
+tenere memorizzata anche la localita' sulla quale siamo in attesa.
+Se questa si disconnette si dovrebbe sbloccare quei processi.
+
+newloc dovrebbe restituire una localita' anche in Node.
+
+la newloc in NetNode non deve far partire direttamente il nodo.
+
+Durante il costruttore del nodo la porta puo' ancora non essere chiara
+e quindi si deve risettare dopo.  Questo e' dovuto all'ereditarieta'.
+
+*************  IMPORTANTE ******************
+Controllare a run-time che non venga fatto l'eval o l'out di un
+NodeCoordinator, purche' non venga a fatto a sua volta da un NodeCoordinator
+o che venga fatto eventualmente a self.
+
+Quando si riceve un processo dall'esterno rifiutare i NodeCoordinator
+
+nella nuova newloc: come creare un nome nuovo?  Ce n'e' davvero bisogno
+adesso che i nomi fisici si basano sui numeri di porta?  Forse no.
+
+Astrarre meglio l'apertura di una socket generica (vedi connect in Node)
+
+Perche' Dest in NodeMessage e' Locality invece di PhysicalLocality?
+
+accept e acceptconn non sono simmetriche nella prima e'il login_handler che
+ripete in loop finche' non si ha una connessione, nella seconda e' NetNode.
+
+Pensare ad un sistema automatico che se riceve una connessione diretta
+in entrata, in automatico stabilisce anche lui la connessione diretta al
+nodo che si sta connettendo.
+
+In KlavaProcessVar equals non dovrebbe restituire sempre false?
+
+NUOVE LOCALITA' FISICHE
+
+Attenzione alle comunicazioni dirette fra Node e Net (non devono avvenire
+perche' lo sono gia').
+
+Controllare le sintassi di AcceptNetNode, ecc..
+
+Siccome nel protocollo di connessione si specifica solo la porta (l'indirizzo
+viene recuperato ed inferito dal server) ci possono essere incongruenze...
+
+addSubNode non e' molto chiaro... viene installato automaticamente
+un AcceptNodeCoordinator per accettare quel nodo...
+
+nel caso di Node e di newloc bisognerebbe essere sicuri che l'operazione
+ha avuto successo, ad es. se si crea una nuova localita' con un numero
+di porta gia' preso si ottiene un errore, e questo dovrebbe essere comunicato
+a chi ha richiamato newloc.
+
+anche addProcess deve essere eseguito solo da un NodeCoordinator.
+
+Il blocco dei processi remoti andrebbe fatto anche in base alla loro
+provenienza non solo al fatto che sono caricati da un class loader.
+
+per ChatServer da Java Applet Window?!
+
+Se un nodo e' creato con una newloc non si riesce a chiuderlo perche'
+lo dovrebbe chiudere il processo che lo ha creato.  Forse si puo
+togliere la restrizione e mettere Close solo nell'interfaccia dei
+NodeCoordinator, cosicche' siamo sempre sicuri che un processo qualsiasi
+non chiuda un nodo, ed un nodo puo' comunque chiudere un altro nodo.
+
+le azioni di retrieve non bloccanti cifrate (coi matcher) non funzionano,
+vanno in loop (vedi Agentx), perche' non si capisce che si e' fallito
+per la cifratura o perche' si sono esaminate tutte... forse il loop
+andrebbe tolto da handle_local_retrieve e messo direttamente nel
+matcher.
+
+MIKADO
+
+se il DefaultNodeRemoteProcessHandler ha problemi a caricare la classe
+dovrebbe notificare in qualche modo il nodo.
+
+Possibilita' di aggiungere delle classi da trasportare.
+
+In Mikado, possibilita' di dire che non deve essere trasportato del codice.
+
+ATTENZIONE: La Net quando riceve un messaggio con un mixin lo stampa,
+ma gli puo' mancare una classe, quindi ci sarebbe un ClassNotFoundException.
+O la si gestisce, oppure si evita di stampare il contenuto del mixin.
+
+IMC
+---
+inverted_proxies dovrebbe mappare in TreeSet invece che in un singolo valore?
+
+Eventi con Generic Type in IMC
+
+Una serie di tipi globali INT, STRING, ...  per favorire la comunicazione
+con client scritti in altri linguaggi (es. C)
+
+Tuple.clone non e' scritto bene, pero' viene usato da resetOriginalTemplate
+quindi si deve stare attenti a modificarlo
+anche copy_elems non fa effettivamente la copia (degli elementi)
+
+Quando si implementa migrate, si deve terminare il processo in esecuzione
+sul sito corrente e rimuoverlo dalla lista dei processi in esecuzione.
+
+Quando si riceve una ProtocolException (errore di stringa) notificarlo
+al mittente.
+
+Controllare PARAMS in TupleState: viene letta una stringa due volte e
+se non e' PARAMS viene persa?
+
+Si deve intercettare l'evento di connessione avvenuta ed aggiornare la
+RoutingTable.  Questo si potrebbe fare direttamente in IMC pero'.
+
+LOGOUT
+
+se una localita' manca rimanere in attesa finche' non compare?
+
+accept e register dovrebbero comunque settare la localita' logica
+e fisica anche in caso di falso cosi' si puo' sapere cosa ha provocato
+il fallimento.
+
+gestire la roba MoMi nei protocolli (usando direttamente la serializzazione).
+
+In RoutingTable la possibilita' di aggiungere piu' id insieme.
+
+KlavaMessageState puo' essere direttamente lo switch state, tanto l'header
+viene letto dal layer.
+
+gestire EVAL
+
+NodePacket dovrebbe esser messo in IMC
+
+Nelle richieste si dovrebbe sempre inserire il campo FROM che puo'
+essere utilizzato per evitare cicli.  Usare la classe base per questo,
+RequestState (Il campo TO viene mandato solo se e' diverso da null).
+
+Aggiornare la RoutingTable quando si ottiene una risposta ad un
+messaggio HASROUTE?
+
+Versioni con closure automatica e operazione per chiudere una
+tupla.
+
+Controllare che l'ObjectOutputStream sia sempre reset
+
+gestione di newloc nelle sue varianti.
+
+eval usa tuple di un solo elemento
+
+Testare il nuovo match e permettere anche il match inverso
+
+relazione fra processi in attesa di risposta da una certa
+localita' e le disconnessioni?  Altrimenti possono attendere
+in eterno!
+
+login e subscribe con la possibilita' di specificare la
+localita' locale?
+
+SubscribeNodeCoordinator
+
+KlavaAcceptRegisterState: se si fa accept bisogna accettare solo
+LOGIN, se si fa SUBSCRIBE bisogna controllare che la LogicalLocality
+sia != null
+
+costruttore di nodo che specifica la main locality
+
+Testare mobilita' di codice.
+
+caller in Process e migrating status
+
+Process var in una tupla.
+
+un altro model per mappare le tuple nella lista
+
+addMainPanel, addTupleSpace dovrebbero essere set methods (che
+rimuovono quello eventualmente precedentedemente settato).
+
+factory method per inizializzare uno spazio delle tuple
+
+setValue deve lanciare un'eccezione in caso di cast errato.
+testare che una KString non matchi una String normale.
+
+KlavaNodeFactory (anche in IMC)
+
+In PanelWithTitle permettere di aggiungere altri pannelli (ad es
+il bottone clear in TextArea).
+
+login(con PhysicalLocality per local)
+
+per la chiusura di un processo, ci vorrebbe un modo automatico per
+il self.
+
+ResponseState.forwardDestination deve usare RouteFinder
+nel test di ForwardStateTest provare a mettere un nodo intermedio
+
+Dialogo per login/subscribe?
+
+subscribe, login dovrebbero cogliere l'eccezione e ritornare true o false?
+Vedi esempio chat.
+
+mettere showException in imc.Node, ed i nodi grafici lo ridefiniscono.
+
+Forse tupleOperation dovrebbe comunque lanciare un InterruptedException oltre alla
+KlavaException?
+
+test: per la chiusura dei waiting threads:
+proc in(t)@remote
+chiudere remote
+il proc dovrebbe terminare anche in locale.
+
+TSLIST: risultato per dire se c'e' qualcosa di selezionato?
+oppure bloccare finche' non c'e' nessuno selezionato?

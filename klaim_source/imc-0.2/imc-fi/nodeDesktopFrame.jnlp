@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- JNLP File for NodeFrameExample -->
+<jnlp
+  spec="1.0+"
+  codebase="http://rap.dsi.unifi.it/~bettini/imc"
+  href="nodeFrameExample.jnlp">
+  <information>
+    <title>This is an example of IMC NodeDesktopFrame</title>
+    <vendor>Lorenzo Bettini</vendor>
+    <homepage href="http://music.dsi.unifi.it/jdpi"/>
+    <description>NodeFrameExample</description>
+    <description kind="short">A demo of IMC NodeFrameDesktop.</description>
+    <offline-allowed/>
+  </information>
+  <resources>
+    <j2se version="1.4+"/>
+    <jar href="imc.jar"/>
+  </resources>
+  <application-desc main-class="examples.topology.NodeFrameExample"/>
+  <security>
+  	<all-permissions/>
+  </security>
+</jnlp> 

@@ -1,0 +1,112 @@
+MIGRAZIONE DI PROCESSI
+----------------------
+
+La migrazione avviene per mezzo del metodo migrate()
+
+  final public void migrate( Locality loc )
+  {
+    try
+    {
+      PhysicalLocality phyloc = node.getPhysicalLocality(loc);
+      if ( phyloc.equals(node.ThisLocality()) )
+          {
+              MigrationStatus = CONTINUED;
+          }
+      else
+          {
+              MigrationStatus = MIGRATING;  
+              eval(this, loc);
+              MigrationStatus = MIGRATED;
+          }
+    }
+    catch ( KlavaException ke )
+    {
+      MigrationStatus = NOT_MIGRATED;
+      ke.printStackTrace ();
+      System.err.println ("Migration to " + loc + " FAILED!");
+    }    
+  }
+
+Il caller viene settato dal metodo procCall (overloaded), che setta anche
+il PreviousStackProcess:
+
+  final public void procCall( Callable P ) throws KlavaException {
+    P.setEnvironment( environment ) ;
+    P.setCaller( this );
+    node.procCall( P ) ;
+  }
+  final public int procCall( KlavaProcess P ) throws KlavaException
+  {
+      P.setPreviousStackProcess( this );
+      called = P;
+      procCall( (Callable)P );
+      MigrationStatus = P.getMigrationStatus();
+      return MigrationStatus ;
+  }
+
+Dopo aver fatto il procCall (che e' bloccante), viene raccolto lo stato
+di migrazione del processo chiamato.
+
+In questo modo la copia locale, sa se il processo che ha chiamato e' migrato.
+
+Il processo che migra avra' come stato MIGRATING
+Questo valore verra' poi gestito da run;
+infatti quando il processo che migra arriva sul sito remoto il valore
+di MIGRATING sara' convertito in ARRIVED:
+
+  final public void run() {
+    executing = true ;
+    if ( MigrationStatus == MIGRATING )
+        setArrived() ;
+    try {
+      pre_execution();
+      execute() ;
+    } catch ( KlavaException e ) {
+      System.err.println( "Uncaught " + e ) ;
+      e.printStackTrace() ;
+    }
+    executing = false ;
+    if ( previousStackProcess != null &&
+         MigrationStatus != MIGRATED &&
+         previouslyArrived )
+    {
+         node.addProcess ( previousStackProcess );
+         previousStackProcess = null;
+    }
+
+    node.removeProcess( this ) ;
+  }
+
+Dove setArrived() setta sia lo stato del processo corrente che
+quello degli eventuali caller allo stato ARRIVED :
+
+  final void setArrived() {
+    MigrationStatus = ARRIVED;
+    if ( ! previouslyArrived )
+      previouslyArrived = true;
+
+    if (previousStackProcess != null) // recursive call on caller
+      previousStackProcess.setArrived();
+  }
+
+Infatti, a quel punto tutti i processi nello stack avranno come stato
+di migrazione ARRIVED.
+
+Il flag previouslyArrived serve per capire se il processo almeno una
+volta e' migrato.  Infatti in quel caso i processi nello stack devono
+essere riavviati manualmente; questo pero' deve avvenire, appunto solo
+se almeno una volta il processo e' migrato.  Dobbiamo inoltre tenerci
+memorizzata questa informazione perche', a causa di un'altra chiamata a
+migrate() la migrazione potrebbe fallire, oppure la migrazione potrebbe
+esser fatta a self stesso.
+
+Per capire se si puo' mandare in esecuzione i processi nello stack,
+prima di terminare, si fa il seguente controllo :
+   
+   if ( previousStackProcess != null && 
+        MigrationStatus != MIGRATED && // non è attualmente migrato    
+        previouslyArrived && // era precendentemente arrivato 
+      )
+    {
+      < esegui il precesso precedente nello stack sul nodo corrente >
+    }

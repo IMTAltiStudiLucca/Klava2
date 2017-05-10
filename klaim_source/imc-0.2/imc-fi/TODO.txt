@@ -1,0 +1,91 @@
+The access to Marshaler and UnMarshaler should be synchronized?
+
+IncomingConnectionState and ConnectionState factory to customize
+the connection protocol.
+
+readStringLine with termination chars and escape char.
+
+LinePrinterLayer should be a tunnel to dump the lines
+we read and the lines we print.
+
+MultiPlexerProtocolLayer e DeMultiPlexerProtocolLayer
+
+A specialized exception for already bound addresses and sockets
+
+test the errors in putget and sequence number layers.
+
+automatic test for linda
+
+test failures with tunnel (bad request)
+
+find a way to specify the UDP packet length
+
+The transmissionChannel should be shared by all the states of
+a protocol.  Implement this in Protocol class.
+
+Find a way to define the end of a message, so that a message
+can be easily forwarded to another host, in a uniform way.
+
+ProtocolState should have a reference to the Protocol, not to
+the stack.
+
+up, down, prepare in ProtocolLayer?
+
+Should ProtocolSwitchState clear the input if found an unknown request?
+
+ServerSide the SessionId has 0.0.0.0
+
+Established connections in ConnectionMonitor are not updated
+when one is removed.
+
+SessionStarterTable is duplicated in Node and ConnectionServer/ConnectionStarter.
+
+Add EventManager interface to NodeCoordinatorProxy and NodeCoordinator,
+and in NodeTest use directly the interface of Node.
+
+Document ProtocolLayerSharedBuffer
+Document getUnMarshaler and getMarshaler in ProtocolStateSimple
+
+ConnectionStarter and ConnectionServer should be named using Session
+instead of Connection.
+
+getNodeStack could substituted with the RoutingTable.
+
+createUnMarshaler in ProtocolLayer, etc., should check that the ProtocolStack is not null.
+
+Node: should store all the processes that it has spawned, to be
+able to terminate them all when closing node?
+The container should be passed to the process itself so that it
+can remove its own reference upon termination.
+
+In the implementation of releaseUnMarshaler set a sort of flag in
+the UnMarshaler saying that you can't read anymore?
+
+update the examples and tests with releaseUnMarshaler.
+
+Insert addExcludeClass to the NodeClassLoader.
+
+SessionStarter: a base class for TcpSessionStarter and UdpSessionStarter
+
+SessionId in SessionStarter base class (not an interface anymore)
+
+ConnectionStarter and ConnectionServer are really needed?
+
+usedForAccept and usedForConnect in SessionStarter
+
+EventViewer (in a list, where you decide which events you want to collect)
+UDP client on closing should send a packet notifying the server
+that it closed, otherwise the server cannot realize it.
+
+ProtocolLayerComposite: modify the stack and manually insert the two sublayers
+in the place of the composite one.  UdpTests fails.
+
+It would be better to associate a Session a ProtocolStack instead of
+a layer, so that when close is invoked, all the layers belonging to the
+stack are called.
+
+Define NodeProcessCollector e NodeCoordinatorCollector inheriting from ProcessCollector
+
+tests for mark, reset and skip in UnMarshaler.
+
+tests for WaitForEvent listeners.

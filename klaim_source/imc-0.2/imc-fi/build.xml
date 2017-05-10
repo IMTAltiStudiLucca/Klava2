@@ -1,0 +1,64 @@
+<?xml version="1.0"?>
+<!-- ====================================================================== 
+     Jan 22, 2006 5:48:37 PM                                                        
+
+     Imc build file
+                   
+     Michele Loreti                                                                
+     ====================================================================== -->
+<project name="IMC" default="compile" basedir=".">
+    <description>
+		IMC build file
+    </description>
+
+	
+	<property name="src" location="src"/>
+	<property name="bin" location="bin"/>
+	<property name="dist"  location="dist"/>
+	<property name="examples" location="examples/src"/>
+	<property name="tests" location="tests"/>
+	
+	<path id="imc.path">
+		<pathelement path="${bin}"/>
+		<pathelement path="${java.class.path}"/>
+	</path>
+	
+	<target name="init">
+		<tstamp/>
+		<mkdir dir="${bin}"/>
+	</target>
+	
+    <target name="compile" depends="init" description="Compile sources">
+		<javac srcdir="${src}"
+         destdir="${bin}"
+         debug="on">
+    		</javac>
+    </target>
+
+	<target name="clean">
+		<delete dir="${bin}"/>
+	</target>
+	
+	<target name="jar" depends="compile">
+		<mkdir dir="${dist}"/>
+		<jar jarfile="${dist}/imc.jar" basedir="${bin}"/>
+	</target>
+
+	<target name="tests">
+		<javac srcdir="${tests}"
+         destdir="${bin}"
+         debug="on">
+    		</javac>
+	</target>
+	
+	<target name="examples" depends="compile">
+		<mkdir dir="examples/bin"/>
+		<javac srcdir="${examples}"
+         destdir="examples/bin"
+         debug="on">
+			<classpath refid="imc.path"/>
+    		</javac>
+	</target>	
+	
+</project>
+

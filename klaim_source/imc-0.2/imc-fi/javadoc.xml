@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project default="javadoc">
+<target name="javadoc">
+<javadoc access="private" author="true" classpath="/home/bettini/eclipse-3.2/plugins/org.junit_3.8.1/junit.jar" destdir="doc" nodeprecated="false" nodeprecatedlist="false" noindex="false" nonavbar="false" notree="false" packagenames="org.mikado.imc.protocols.pipe,org.mikado.imc.protocols.udp,org.mikado.imc.protocols.tcp,org.mikado.imc.events,org.mikado.imc.mobility,org.mikado.imc.log,org.mikado.imc.topology,org.mikado.imc.gui,org.mikado.imc.common,org.mikado.imc.protocols" source="1.5" sourcepath="tests:src:examples/src" splitindex="true" use="true" version="true"/>
+</target>
+</project>
