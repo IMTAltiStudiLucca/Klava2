@@ -3,7 +3,11 @@ package klaim.localspace;
 import java.io.Serializable;
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Vector;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.mikado.imc.events.EventGeneratorAdapter;
 
@@ -29,6 +33,9 @@ public class TupleSpaceVector extends EventGeneratorAdapter implements
     /**
      * 
      */
+    final Lock dataLock = new ReentrantLock();
+    final Condition responseIsBack = dataLock.newCondition();
+    
     private static final long serialVersionUID = 835829051669003105L;
 
     protected Vector<Tuple> tuples;    
@@ -55,11 +62,10 @@ public class TupleSpaceVector extends EventGeneratorAdapter implements
     }
 
     protected void _out(Tuple t) {
-        synchronized (tuples) 
-        {
-            add(t);
-            tuples.notifyAll();
-        }
+        dataLock.lock();
+        add(t);
+        responseIsBack.signalAll();
+        dataLock.unlock();
     }
 
     /**
@@ -137,9 +143,9 @@ public class TupleSpaceVector extends EventGeneratorAdapter implements
     public boolean read_nb(Tuple t) {
         // #CHANGES
         boolean result = false;
-        synchronized (tuples) {
-            result = findTuple(t, false);
-        }
+        dataLock.lock();
+        result = findTuple(t, false);
+        dataLock.unlock();
         return result;
     }
 
@@ -149,9 +155,10 @@ public class TupleSpaceVector extends EventGeneratorAdapter implements
     public boolean in_nb(Tuple t) {
         // #CHANGES
         boolean result = false;
-        synchronized (tuples) {
-            result = findTuple(t, true);
-        }
+
+        dataLock.lock();
+        result = findTuple(t, true);
+        dataLock.unlock();
         return result;
     }
 
@@ -159,18 +166,19 @@ public class TupleSpaceVector extends EventGeneratorAdapter implements
             throws InterruptedException {
         boolean matched = false;
 
-        synchronized (tuples) 
+        dataLock.lock();
         {
             while (!matched) {
                 matched = findTuple(t, removeTuple);
                 if (!matched) {
                     if (blocking) {
-                        tuples.wait();
+                        responseIsBack.await();
                     } else
                         return false;
                 }
             } // while ( ! matched )
-        } // synchronized ( tuples )
+        }
+        dataLock.unlock();
 
         // if we're here we found a matching tuple
         return true;
@@ -195,7 +203,7 @@ public class TupleSpaceVector extends EventGeneratorAdapter implements
             throws KlavaTimeOutException {
         boolean matched = false;
 
-        synchronized (tuples) 
+        dataLock.lock();
         {
             long waitTime = TimeOut;
             long startTime = System.currentTimeMillis();
@@ -210,7 +218,8 @@ public class TupleSpaceVector extends EventGeneratorAdapter implements
                     }
                     try {
                         waitTime = TimeOut - timeSoFar;
-                        tuples.wait(waitTime);
+                       // tuples.wait(waitTime);
+                        responseIsBack.awaitNanos(waitTime);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                         return false;
@@ -222,7 +231,8 @@ public class TupleSpaceVector extends EventGeneratorAdapter implements
                     }
                 }
             } // while ( ! matched )
-        } // synchronized ( tuples )
+        }
+        dataLock.unlock();
 
         return true;
     }
@@ -230,14 +240,14 @@ public class TupleSpaceVector extends EventGeneratorAdapter implements
     public String toString() {
         StringBuffer sb = new StringBuffer("{ ");
 
-        synchronized (tuples) {
-            for (int i = 0; i < length(); i++) {
-                sb.append(getTuple(i));
-                if (i < length() - 1) {
-                    sb.append(", ");
-                }
+        dataLock.lock();
+        for (int i = 0; i < length(); i++) {
+            sb.append(getTuple(i));
+            if (i < length() - 1) {
+                sb.append(", ");
             }
         }
+        dataLock.unlock();
         sb.append(" }");
         return sb.toString();
     }
@@ -261,13 +271,14 @@ public class TupleSpaceVector extends EventGeneratorAdapter implements
      * @see klava.TupleSpace#removeTuple(int)
      */
     public void removeTuple(int i) {
-        synchronized (tuples) 
+        dataLock.lock();
         {
             Tuple tuple = tuples.elementAt(i);
             tuples.removeElementAt(i);
             generate(TupleEvent.EventId, new TupleEvent(this, tuple,
                     TupleEventType.REMOVED));
         }
+        dataLock.unlock();
     }
 
     /*
@@ -276,11 +287,11 @@ public class TupleSpaceVector extends EventGeneratorAdapter implements
      * @see klava.TupleSpace#removeAllTuples()
      */
     public void removeAllTuples() {
-        synchronized (tuples) {
+        dataLock.lock();
             tuples.removeAllElements();
             generate(TupleEvent.EventId, new TupleEvent(this,
                     TupleEventType.REMOVEDALL));
-        }
+        dataLock.unlock();
     }
 
     public Vector<Tuple> getTuples() {
@@ -341,8 +352,18 @@ public class TupleSpaceVector extends EventGeneratorAdapter implements
                 "TupleSpaceVector: conversion from string feature not implemented");
     }
 
-    public void setSettings(Hashtable<String, Boolean[]> settings) {
+    public void setSettings(Hashtable<String,  List<Object>> settings) {
         // TODO Auto-generated method stub
         
     }
+    
+    @Override
+    public void clear()  
+    {
+        dataLock.lock(); 
+        tuples.clear();
+        dataLock.unlock();
+        return;
+    }
+
 }

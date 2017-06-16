@@ -9,6 +9,7 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -49,7 +50,8 @@ TupleItem, Serializable, TupleSpace
     Hashtable<Long, Pair<Tuple, String>> tupleList = null;
     
     // structure of indexes
-    MultiIndex multiIndex;
+    HashMap<String, MultiIndex> indexesPerTypeMap;
+//    MultiIndex multiIndex;
     
     final Lock tupleIndexLock = new ReentrantLock();
     final Lock dataLock = new ReentrantLock();
@@ -57,15 +59,15 @@ TupleItem, Serializable, TupleSpace
     
     ConcurrentLinkedQueue<TupleRequest> requestToTupleSpace;
     
-    RequestQueueProcessor requestProcessor;
+   // RequestQueueProcessor requestProcessor;
     
     
     public IndexedTupleSpace()
     {
         tupleList = new Hashtable<Long, Pair<Tuple, String>>();
-        multiIndex = new MultiIndex();
+        indexesPerTypeMap = new HashMap<>();
         
-        requestProcessor = new RequestQueueProcessor();
+     //   requestProcessor = new RequestQueueProcessor();
  //       requestToTupleSpace = new ConcurrentLinkedQueue<TupleRequest>();
         
     }
@@ -75,35 +77,32 @@ TupleItem, Serializable, TupleSpace
      * @param tuple
      */
     public void out(Tuple tuple)
-    {      
-//        Profiler.begin("out-overall");
-        
-//        Profiler.begin("out-ID");
-        
+    {             
         // get next tupleID
         Long tupleIndex = getNextTupleIndex();
-//        Profiler.end("out-ID");
         
-//        Profiler.begin("out-struct");
         // just put the tuple into the list
         Pair<Tuple, String> pair = new Pair<Tuple, String>(tuple, getStructure(tuple));
-//        Profiler.end("out-struct");
-        
- //       Profiler.begin("out-put");
+        dataLock.lock();
         tupleList.put(tupleIndex, pair);
-//        Profiler.end("out-put");
 
-
-//        Profiler.begin("out-index");
+        // get multiIndex
+        MultiIndex mi = indexesPerTypeMap.get(pair.getSecond());
+        if (mi == null)
+        {
+            mi = new MultiIndex();
+            indexesPerTypeMap.put(pair.getSecond(), mi);
+            
+        }        
+        dataLock.unlock();
+        mi.dataLock.lock();
+        mi.add(tuple, tupleIndex);
+        mi.dataLock.unlock();
+        
         // update index
         dataLock.lock();
-        multiIndex.add(tuple, tupleIndex);
         responseIsBack.signalAll();
         dataLock.unlock();
-        
-//        Profiler.end("out-index");
-        
- //       Profiler.end("out-overall");
     }
     
     /**
@@ -146,9 +145,18 @@ TupleItem, Serializable, TupleSpace
     {
         tupleList.remove(tupleID);
                 
-        dataLock.lock();
+        String tupleStructure = getStructure(tuple);
+        MultiIndex mi = indexesPerTypeMap.get(tupleStructure);
+        if (mi != null)
+        {
+            dataLock.lock();
+            mi.removeIndexDataByTuple(tuple, tupleID); 
+            dataLock.unlock();
+        }
+        
+/*        dataLock.lock();
         multiIndex.removeIndexDataByTuple(tuple, tupleID); 
-        dataLock.unlock();
+        dataLock.unlock();*/
         return true;
     }
     
@@ -161,11 +169,17 @@ TupleItem, Serializable, TupleSpace
     Pair<Long, Tuple> searchOneTuple(Tuple template) throws IOException
     {
         Set<Long> tupleIDList = null;
-        dataLock.lock();
-        tupleIDList = filterByTemplate(template);
-        dataLock.unlock();
-        Pair<Long, Tuple> resultTuple = filterByTupleStructure(template, tupleIDList);
-        return resultTuple;
+        
+        String templateStructure = getStructure(template);
+        MultiIndex mi = indexesPerTypeMap.get(templateStructure);
+        if(mi != null){
+            mi.dataLock.lock();
+            tupleIDList = filterByTemplate(template, mi);
+            mi.dataLock.unlock();
+            Pair<Long, Tuple> resultTuple = filterByTupleStructure(template, tupleIDList);
+            return resultTuple;
+        } else
+            return null;
     }
 
     /**
@@ -173,9 +187,9 @@ TupleItem, Serializable, TupleSpace
      * @param template
      * @return
      */
-    Set<Long> filterByTemplate(Tuple template)
+    Set<Long> filterByTemplate(Tuple template, MultiIndex mi)
     {
-        List<Map.Entry<Integer, Integer>> indexList = multiIndex.getSortedIndexes();
+        List<Map.Entry<Integer, Integer>> indexList = mi.getSortedIndexes();
         
         Set<Long> intersection = null;
         // check available index by index
@@ -191,17 +205,22 @@ TupleItem, Serializable, TupleSpace
                 continue;
             }
             
-            Long item = MultiIndex.getHashCode(template.getItem(indexID).toString()); //String.valueOf( template.getItem(indexID).toString().hashCode() );  // (String) template.getItem(indexID);
+            String item = MultiIndex.getHashCode(template.getItem(indexID).toString()); //String.valueOf( template.getItem(indexID).toString().hashCode() );  // (String) template.getItem(indexID);
             if(item != null)
             {
-                Long fieldValue = item;
+                String fieldValue = item;
                 if(intersection == null)
                 {
-                    intersection = multiIndex.indexesMap.get(indexID).get(fieldValue);
+                    if ((Set<Long>) mi.indexesMap.get(indexID).get(fieldValue) == null)
+                    {
+                        System.out.println("no value");
+                        return null;
+                    }
+                    intersection = (Set<Long>) mi.indexesMap.get(indexID).get(fieldValue).clone();
                 }
                 else
                 {
-                    HashSet<Long> set = multiIndex.indexesMap.get(indexID).get(fieldValue);
+                    HashSet<Long> set = mi.indexesMap.get(indexID).get(fieldValue);
                     if(set != null)
                         intersection.retainAll(set);
                     else
@@ -236,30 +255,28 @@ TupleItem, Serializable, TupleSpace
     {
         if(tupleIDList == null || template == null || tupleIDList.size() == 0)
             return null;
-        // obtain structure of template
-        String templateStructure = getStructure(template);
-        int templateLength = template.length();
         
+        dataLock.lock();
         // check all tuples
         Iterator<Long> iterator = tupleIDList.iterator(); 
+        
+        Pair<Long, Tuple> result = null;
         while (iterator.hasNext())
         {
             Long tupleID = iterator.next();
             Pair<Tuple, String> pair = tupleList.get(tupleID);
-            if(pair.getFirst().length() != templateLength ||
-               !templateStructure.equals(pair.getSecond()))
+            
+            // check by value
+            if(checkTupleByValue(pair.getFirst(), template))
             {
-                continue;
-            } else
-            {
-                // check by value
-                if(checkTupleByValue(pair.getFirst(), template))
-                    return new Pair<Long, Tuple>(tupleID, pair.getFirst());
-                else 
-                    continue;
-            }            
+                result =  new Pair<Long, Tuple>(tupleID, pair.getFirst());
+                break;
+            }
+            else 
+                continue;       
         }
-        return null;
+        dataLock.unlock();
+        return result;
     }
     
     /**
@@ -278,13 +295,12 @@ TupleItem, Serializable, TupleSpace
             {
                 continue;
             } else
-            {
+            {                  
                 if(MultiIndex.acceptedFieldDataTypeList.contains(template.getItem(i).getClass().getName()))
                 {
                     if (!template.getItem(i).equals(tuple.getItem(i)))
                         return false;
-                } else
-                {
+                } else {
                     return byteLevelComparision(template.getItem(i), tuple.getItem(i));
                 }
             }        
@@ -403,7 +419,7 @@ TupleItem, Serializable, TupleSpace
    
 
     @Override
-    public void setSettings(Hashtable<String, Boolean[]> settings) {
+    public void setSettings(Hashtable<String, List<Object>> settings) {
         // TODO Auto-generated method stub
         
     }
@@ -456,4 +472,18 @@ TupleItem, Serializable, TupleSpace
     public Object duplicate() {
         return null;
     }
+    
+    @Override
+    public void clear()  
+    {
+        dataLock.lock();
+
+        tupleIndex = 0L;
+        tupleList.clear();
+        indexesPerTypeMap.clear();
+     //   requestProcessor = new RequestQueueProcessor();
+        dataLock.unlock();
+        return;
+    }
+
 }

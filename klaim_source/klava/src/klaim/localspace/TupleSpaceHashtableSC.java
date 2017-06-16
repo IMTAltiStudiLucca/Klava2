@@ -13,7 +13,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -21,13 +20,14 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.mikado.imc.events.EventGeneratorAdapter;
 
 import klaim.concurrent_structures.TupleSpaceHashtableCS;
+import klaim.localspace.SecondCheckHT.SecondCheckDataHT;
 import klava.KlavaException;
 import klava.Tuple;
 import klava.TupleItem;
 import klava.TupleSpace;
 import klava.index_space.IndexedTupleSpace;
 
-public class TupleSpaceHashtable extends EventGeneratorAdapter implements
+public class TupleSpaceHashtableSC extends EventGeneratorAdapter implements
         TupleItem, Serializable, TupleSpace
 {
     public static final ArrayList<String> acceptedFieldDataTypeList = setAcceptedFieldDataType();
@@ -35,18 +35,20 @@ public class TupleSpaceHashtable extends EventGeneratorAdapter implements
     final Lock dataLock = new ReentrantLock();
     final Condition responseIsBack = dataLock.newCondition();
     
+    SecondCheckHT sCheck = new SecondCheckHT();
+    
     ConcurrentHashMap<String, Hashtable<Long, LinkedList<Tuple>>> tupleTable = new ConcurrentHashMap<>();
-    Hashtable<String, AtomicBoolean> updateControlTAble = new Hashtable<>();
+    Hashtable<String, AtomicBoolean> updateControlTable = new Hashtable<>();
     
     // settings
     Hashtable<String, List<Object>> settingsTable = new Hashtable<>();
     
-    AtomicLong tupleSpaceState = new AtomicLong(0);
     
     public void out(Tuple tuple) {
             
         tuple.removed.set(false);
         List<Object> patternCollection = settingsTable.get(tuple.getTupleType());
+        ArrayList<Long> dataKeyList = new ArrayList<>(patternCollection.size());
         for(int i=0; i<patternCollection.size(); i++)
         {
             Boolean[]  pattern = (Boolean[])patternCollection.get(i);
@@ -56,22 +58,28 @@ public class TupleSpaceHashtable extends EventGeneratorAdapter implements
             String tableKey = TupleSpaceHashtableCS.getTableKey(tuple.getTupleType(), patternKey);
             tupleTable.putIfAbsent(tableKey, new Hashtable<Long, LinkedList<Tuple>>());
             
-            Hashtable<Long, LinkedList<Tuple>> dataTable = tupleTable.get(tableKey);
+            Hashtable<Long, LinkedList<Tuple>> smallTable = tupleTable.get(tableKey);
             Long dataKey = TupleSpaceHashtableCS.getHashedValue(tuple, patternKey);  
             
-            dataTable.putIfAbsent(dataKey, new LinkedList<Tuple>());
+            smallTable.putIfAbsent(dataKey, new LinkedList<Tuple>());
             
-            LinkedList<Tuple> list = dataTable.get(dataKey);
+            LinkedList<Tuple> list = smallTable.get(dataKey);
             synchronized (list) 
             {
                 list.add(tuple);
-            }       
+            }  
+            dataKeyList.add(dataKey);
         }
 
-        dataLock.lock();
-        tupleSpaceState.incrementAndGet();
-        responseIsBack.signalAll();
-        dataLock.unlock();   
+        if(sCheck.readingProcesses.size() > 0) 
+        {
+            dataLock.lock();
+            sCheck.addTuple(tuple, dataKeyList);
+            dataLock.unlock();
+            
+            sCheck.notifyProcesses();
+            
+        } 
     }
     
     public boolean read(Tuple template) throws InterruptedException {  
@@ -131,9 +139,7 @@ public class TupleSpaceHashtable extends EventGeneratorAdapter implements
                         } catch (IOException e) {
                             result = false;
                             e.printStackTrace();
-                        }
-                        
-                        System.out.println("more search " + template);
+                        }                       
                     }
                 }
             }
@@ -144,39 +150,56 @@ public class TupleSpaceHashtable extends EventGeneratorAdapter implements
     
     private boolean searchForTuple(Tuple template, boolean remove, boolean blocking)
     {
+        String subscriptionName = Thread.currentThread().getName();
+        dataLock.lock();
+        SecondCheckDataHT scData = sCheck.subscribeProcess(subscriptionName);
+        dataLock.unlock();
+        
         String patternKey = TupleSpaceHashtableCS.getPattern(template);
         String tableKey = TupleSpaceHashtableCS.getTableKey(template);
         Long tupleKey = TupleSpaceHashtableCS.getHashedValue(template, patternKey);
         
-        boolean result = false;
         
-            
-        while(!result)
-        {           
-            long oldState = tupleSpaceState.get();
-            result = findTuple(template, tableKey, tupleKey, remove);
-            
-            if(!blocking) {
-                break;
-            }
-            
-            if(!result)
-            {
-                dataLock.lock();
-                long newState = tupleSpaceState.get();
-                if(newState == oldState) {
-                    try {
-                        responseIsBack.await();
-                     } catch (InterruptedException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    }
-                } else {
-                    System.err.println("!!!!!!!");
-                }
-                dataLock.unlock();
-            }
+        boolean result = findTuple(template, tableKey, tupleKey, remove);
+        
+        if(!blocking)
+        {
+       //     dataLock.lock();
+            sCheck.unSubscribeProcess(subscriptionName);
+         //   dataLock.unlock();
+            return result;
         }
+             
+        if(!result) {
+            while(true) {
+
+                long oldState = scData.processState.get();
+
+                result = SecondCheckHT.checkIncommingTuples(scData, tupleKey, template, remove);
+                
+                if(result) {
+                    break;
+                }
+                              
+                // here the new tuple comes
+                try {
+                    scData.syncObject.lock.lock();
+                    long newState = scData.processState.get();
+                    if(newState == oldState)
+                    {
+                        scData.syncObject.await();
+                    }
+                    scData.syncObject.lock.unlock();
+                } catch (InterruptedException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+                
+            } 
+        }
+  
+        sCheck.unSubscribeProcess(subscriptionName); 
+        
         return result;
     }
 
@@ -283,6 +306,7 @@ public class TupleSpaceHashtable extends EventGeneratorAdapter implements
     @Override
     public void clear() {
         tupleTable.clear();
+        
     }
     
 }

@@ -5,6 +5,7 @@ package klava;
 
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.List;
 
 import org.mikado.imc.events.EventGenerator;
 
@@ -29,13 +30,17 @@ public interface TupleSpace extends EventGenerator {
     public abstract boolean in_t(Tuple t, long TimeOut)
             throws InterruptedException;
 
-    public abstract boolean read_nb(Tuple t);
+    public abstract boolean read_nb(Tuple t) throws InterruptedException;
 
-    public abstract boolean in_nb(Tuple t);
+    public abstract boolean in_nb(Tuple t) throws InterruptedException;
     
-    public void setSettings(Hashtable<String, Boolean[]> settings);
+    public void setSettings(Hashtable<String, List<Object>> settings);
 
     public abstract int length();
+    
+    public abstract void clear();
+    
+//    public abstract void stop();
 
     /**
      * Removes the i-th tuple from the tuple space (and generates a removed

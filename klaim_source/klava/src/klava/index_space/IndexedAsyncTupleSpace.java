@@ -196,10 +196,10 @@ public class IndexedAsyncTupleSpace extends EventGeneratorAdapter implements
                 continue;
             }
             
-            Long item = MultiIndex.getHashCode(template.getItem(indexID).toString()); //String.valueOf( template.getItem(indexID).toString().hashCode() );  // (String) template.getItem(indexID);
+            String item = MultiIndex.getHashCode(template.getItem(indexID).toString()); //String.valueOf( template.getItem(indexID).toString().hashCode() );  // (String) template.getItem(indexID);
             if(item != null)
             {
-                Long fieldValue = item;
+                String fieldValue = item;
                 if(intersection == null)
                 {
                     intersection = multiIndex.indexesMap.get(indexID).get(fieldValue);
@@ -348,7 +348,7 @@ public class IndexedAsyncTupleSpace extends EventGeneratorAdapter implements
     }
     
     @Override
-    public void setSettings(Hashtable<String, Boolean[]> settings) {
+    public void setSettings(Hashtable<String, List<Object>> settings) {
         // TODO Auto-generated method stub
         
     }
@@ -400,4 +400,26 @@ public class IndexedAsyncTupleSpace extends EventGeneratorAdapter implements
         // TODO Auto-generated method stub
         return null;
     }
+    
+    @Override
+    public void clear()  
+    {
+        dataLock.lock();
+        tupleIndex = 0L;
+        tupleList.clear();
+        
+        // structure of indexes
+        MultiIndex multiIndex = new MultiIndex();
+        final Lock dataLock = new ReentrantLock();
+        preTupleList.clear();
+        
+        indexingThread.stop();
+        
+        indexingThread = new IndexingThread(this);
+        indexingThread.setPriority(Thread.NORM_PRIORITY);
+        indexingThread.start();
+        
+        return;
+    }
+
 }

@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Vector;
 
 import org.mikado.imc.common.IMCException;
@@ -720,7 +721,7 @@ public class KlavaNode extends Node {
         Response<String> response = new Response<String>();
 
         /* we build a tuple made of a single element, the process to send */
-        tupleOperation(TuplePacket.EVAL_S, new Tuple(klavaProcess),
+        tupleOperation(TuplePacket.EVAL_S, new Tuple(new Object[]{klavaProcess}),
                 realDestination, true, waitingForOkResponse, response, -1);
         /*
          * if we're here the sending succeeded. But we still have to check the
@@ -731,7 +732,7 @@ public class KlavaNode extends Node {
     }
 
     
-    public void setSettings(Hashtable<String, Boolean[]> settings) {
+    public void setSettings(Hashtable<String, List<Object>> settings) {
         tupleSpace.setSettings(settings);
     }
     
@@ -805,7 +806,13 @@ public class KlavaNode extends Node {
      * @return Whether a matching tuple is found
      */
     public boolean in_nb(Tuple tuple) {
-        return tupleSpace.in_nb(tuple);
+        try {
+            return tupleSpace.in_nb(tuple);
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            return false;
+        }
     }
 
     /**
@@ -934,7 +941,13 @@ public class KlavaNode extends Node {
      * @return Whether a matching tuple is found
      */
     public boolean read_nb(Tuple tuple) {
-        return tupleSpace.read_nb(tuple);
+        try {
+            return tupleSpace.read_nb(tuple);
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            return false;
+        }
     }
 
     /**

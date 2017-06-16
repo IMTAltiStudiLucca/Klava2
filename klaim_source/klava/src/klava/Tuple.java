@@ -5,18 +5,20 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Vector;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import klava.momi.MoMiTupleItem;
 import klava.topology.KlavaProcess;
 import klava.topology.KlavaProcessVar;
 
-public class Tuple implements Cloneable, java.io.Serializable {
+public class Tuple implements Cloneable, java.io.Serializable { //Comparable<Tuple>
 
+    public AtomicBoolean removed = new AtomicBoolean(false);
     /**
      * 
      */
     private static final long serialVersionUID = -2171133549648235506L;
-
+    
     /**
      * the GUID of this tuple
      */
@@ -89,46 +91,15 @@ public class Tuple implements Cloneable, java.io.Serializable {
         long longtime = date.getTime() + Tuple.id_counter++;
         id = String.valueOf(longtime);
     }
-
-    public Tuple(Object o1) {
-        items = new Vector<Object>(1);
-        add(o1);
-        initId();
-    }
-
-    public Tuple(Object o1, Object o2) {
-        items = new Vector<Object>(2);
-        add(o1);
-        add(o2);
-        initId();
-    }
-
-    public Tuple(String tupleName, Object... objs) {
+    
+    public Tuple(String tupleName, Object[] objs) {
         tupleType = tupleName;
-        items = new Vector<Object>(objs.length);
+        items = new Vector<>();
         for(int i=0; i<objs.length; i++)
         {
             add(objs[i]);
         }
             
-        initId();
-    }
-
-    public Tuple(Object o1, Object o2, Object o3, Object o4) {
-        items = new Vector<Object>(4);
-        add(o1);
-        add(o2);
-        add(o3);
-        add(o4);
-        initId();
-    }
-    
-    
-    public Tuple(Object o1, Object o2, Object o3) {
-        items = new Vector<Object>(3);
-        add(o1);
-        add(o2);
-        add(o3);
         initId();
     }
 
@@ -147,7 +118,7 @@ public class Tuple implements Cloneable, java.io.Serializable {
         original_template = null;
     }
 
-    protected Vector<Object> getItems() {
+    public Vector<Object> getItems() {
         return items;
     }
 
@@ -371,15 +342,15 @@ public class Tuple implements Cloneable, java.io.Serializable {
         return true;
     }
 
-    public boolean match(Tuple toBeMatched) {
-        if (!preMatch(toBeMatched)) {
+    public boolean match(Tuple template) {
+        if (!preMatch(template)) {
             return false;
         }
 
         // we make operations on a copy of the original tuple
         Tuple t;
 
-        t = (Tuple) toBeMatched.clone();
+        t = (Tuple) template.clone();
         t.id = id; // we also set the id of this tuple
 
         for (int i = 0; i < length(); i++) {
@@ -440,46 +411,107 @@ public class Tuple implements Cloneable, java.io.Serializable {
         }
 
         // first we save the orginal template
-        toBeMatched.setOriginalTemplate();
+        template.setOriginalTemplate();
         // we update the original
-        toBeMatched.copy(t);
+        template.copy(t);
         return true;
     }
+    
+    /*
+    public boolean match(Tuple template) {
+        if (!preMatch(template)) {
+            return false;
+        }
+
+        // we make operations on a copy of the original tuple
+        Tuple t;
+
+        t = (Tuple) template.clone();
+        t.id = id; // we also set the id of this tuple
+
+        for (int i = 0; i < length(); i++) {
+            Object MyElement = getItem(i);
+            Object ItsElement = t.getItem(i);
+
+            // we skip bad tuple items
+            if (MyElement == null)
+                continue;
+
+            if (ItsElement == null)
+                return false;
+
+            if (ItsElement instanceof Class
+                    && ItsElement.equals(MyElement.getClass())) {
+                try {
+                    if (!(ItsElement.equals(getClass()))) {
+                        // for security fields of tuple type are not allowed
+                        t.setItem(i, MyElement);
+                    } else {
+                        return false;
+                    }
+                } catch (Exception e) {
+                    System.out.println(e);
+                    return false;
+                }
+            } else if (ItsElement instanceof TupleItem) {
+                TupleItem itsElement = (TupleItem) ItsElement;
+                if (itsElement.isFormal()) {
+                    if (itsElement instanceof MoMiTupleItem) {
+                        MoMiTupleItem momi_item = (MoMiTupleItem) itsElement;
+                        if (!((MoMiTupleItem) MyElement).getType().subtype(
+                                momi_item.getType()))
+                            return false;
+                    } else if (itsElement instanceof KlavaProcessVar) {
+                        if (!(MyElement instanceof KlavaProcess))
+                            return false;
+                    } else if (!MyElement.getClass().getName().equals(
+                            ItsElement.getClass().getName())) {
+                        return false;
+                    }
+                    t.setItem(i, MyElement);
+                } else if (ItsElement.getClass().equals(MyElement.getClass())
+                        && ItsElement.equals(MyElement)) {
+                    continue;
+                } else
+                    return false;
+            } else if (!ItsElement.getClass().equals(MyElement.getClass())) {
+                return false;
+            } else if ((ItsElement.equals(MyElement))
+                    || (MyElement instanceof Tuple
+                            && ItsElement instanceof Tuple && ((Tuple) MyElement)
+                            .match((Tuple) ItsElement))) {
+                continue;
+            } else {
+                return false;
+            }
+        }
+
+        // first we save the orginal template
+        template.setOriginalTemplate();
+        // we update the original
+        template.copy(t);
+        return true;
+    }*/
 
     /**
      * Calls equals on each element. Also checks the identifier.
      * 
      * @see java.lang.Object#equals(java.lang.Object)
      */
-    @Override
-    public boolean equals(Object obj) {
-        if (!(obj instanceof Tuple))
-            return false;
-
-        Tuple t = (Tuple) obj;
-
-        if (length() != t.length() || !id.equals(t.id))
-            return false;
-
-        for (int i = 0; i < length(); i++) {
-            Object MyElement = getItem(i);
-            Object ItsElement = t.getItem(i);
-
-            if (MyElement != ItsElement) {
-                // they cannot be both null, because of the previous test
-                // so if one is null the tuples can't be the same
-                if (MyElement == null || ItsElement == null
-                        || !MyElement.equals(ItsElement))
-                    return false;
-            }
-        }
-
-        if (handleRetrieved != t.handleRetrieved
-                || !already_retrieved.equals(t.already_retrieved))
-            return false;
-
-        return true;
-    }
+//    @Override
+//    public boolean equals(Object obj) {
+//        if (!(obj instanceof Tuple))
+//            return false;
+//
+//        Tuple t = (Tuple) obj;
+//
+//        if (length() != t.length())
+//            return false;
+//        
+//        int comparisionResult = this.compareTo(t);
+//        
+//        return (comparisionResult == 0);
+//    }
 
     /**
      * if it's a tuple representation removes ( and )
@@ -504,4 +536,36 @@ public class Tuple implements Cloneable, java.io.Serializable {
     {
         return this.tupleType;
     }
+    
+    public void setTupleType(String tupleType)
+    {
+        this.tupleType = tupleType;       
+    }
+
+//    @Override
+//    public int compareTo(Tuple tupleToCompare) {
+//        int lengthDifference = this.length() - tupleToCompare.length();
+//        
+//        if(lengthDifference == 0)
+//        {
+//            for(int i=0; i<this.length(); i++)
+//            {
+//                if(mask!= null && mask[i] == false)
+//                    continue;
+//                Comparable<Object> obj1 = (Comparable<Object>) this.getItem(i);
+//                Comparable<Object> obj2 = (Comparable<Object>) tupleToCompare.getItem(i);
+//                int comparisionResult = obj1.compareTo(obj2);
+//                if(comparisionResult == 0)
+//                    continue;
+//                else 
+//                    return comparisionResult;
+//            }
+//        }
+//        else if(lengthDifference < 0)
+//            return -1;
+//        else if (lengthDifference > 0)
+//            return 1;
+//
+//        return 0;
+//    }
 }

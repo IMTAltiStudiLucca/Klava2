@@ -11,6 +11,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import klava.Tuple;
 
@@ -22,13 +24,15 @@ import klava.Tuple;
 public class MultiIndex
 {
     // collection of indexes
-    public List<HashMap<Long, HashSet<Long>>> indexesMap; 
+    public List<HashMap<String, HashSet<Long>>> indexesMap; 
     
-    public static final ArrayList<String> acceptedFieldDataTypeList = setAcceptedFieldDataType();
+    public final Lock dataLock = new ReentrantLock();
+    
+    public static final HashSet<String> acceptedFieldDataTypeList = setAcceptedFieldDataType();
     
     public MultiIndex()
     {
-        indexesMap = new ArrayList<HashMap<Long, HashSet<Long>>>();
+        indexesMap = new ArrayList<HashMap<String, HashSet<Long>>>();
     }
 
     
@@ -43,17 +47,17 @@ public class MultiIndex
         {                          
             if(indexesMap.size() <= i)
             {
-                indexesMap.add(new HashMap<Long, HashSet<Long>>());
+                indexesMap.add(new HashMap<String, HashSet<Long>>());
             }
             
             boolean acc = acceptedFieldDataTypeList.contains(t.getItem(i).getClass().getName());
      
             if(!acc)
                 continue;
-            Long value = MultiIndex.getHashCode(t.getItem(i).toString());
+            String value = MultiIndex.getHashCode(t.getItem(i).toString());
             
             // add tupleID in the hashmap associated with field content
-            HashMap<Long, HashSet<Long>> indexMap = indexesMap.get(i);
+            HashMap<String, HashSet<Long>> indexMap = indexesMap.get(i);
             boolean contain = indexMap.containsKey(value);
             if(!contain)
             {
@@ -69,7 +73,7 @@ public class MultiIndex
    
     
     /**
-     * generally, it is possible to save tuple ID and all indexes associated with it as inverse structure to the index collection
+     * generally, it is possible to save tuple ID and all indexes associated with it as an inverse structure to the index collection
      * but ..
      * @param tuple
      * @param tupleID
@@ -79,10 +83,10 @@ public class MultiIndex
     {
         // create structure for the update of the indexes
         // indexID - hash value
-        HashMap<Integer, Long> deletionInfo = new HashMap<Integer, Long>();
+        HashMap<Integer, String> deletionInfo = new HashMap<Integer, String>();
         for(int i = 0; i < tuple.length(); i++)
         {
-            Long value = MultiIndex.getHashCode(tuple.getItem(i).toString());  //String.valueOf(tuple.getItem(i).toString().hashCode());
+            String value = MultiIndex.getHashCode(tuple.getItem(i).toString());  //String.valueOf(tuple.getItem(i).toString().hashCode());
             if(indexesMap.size() <= i)
             {
                 throw new Exception("Achtung! MultiIndex:updateIndexes. Index is corrupted");
@@ -91,10 +95,10 @@ public class MultiIndex
         }
         
         // check all indexes
-        for(Entry<Integer, Long> pair : deletionInfo.entrySet())
+        for(Entry<Integer, String> pair : deletionInfo.entrySet())
         {
             int indexID = pair.getKey();
-            Long value = pair.getValue();
+            String value = pair.getValue();
             
             // remove tupleID from index
             if(indexesMap.size() < indexID  || !indexesMap.get(indexID).containsKey(value))
@@ -124,12 +128,22 @@ public class MultiIndex
         return sortedbyValueMap;
     }
     
+    
+    
+    public static String getHashCode(String str)
+    {
+        if(str == null)
+            return null;
+        else
+            return str; //hash(str); //str.hashCode();
+    }
+    
     /**
      * get hash of the string
      * @param str
      * @return
      */
-    public static Long getHashCode(String str)
+/*    public static Long getHashCode(String str)
     {
         if(str == null)
             return null;
@@ -145,7 +159,7 @@ public class MultiIndex
           h = 31*h + string.charAt(i);
         }
         return h;
-      }
+    }*/
     
     /*
      * method, Comparator, for sorting key-value collection by value
@@ -164,10 +178,11 @@ public class MultiIndex
         return sortedEntries;
     }
 
-    public static ArrayList<String> setAcceptedFieldDataType()
+    public static HashSet<String> setAcceptedFieldDataType()
     {
-        ArrayList<String> acceptedFieldDataTypeList = new ArrayList<String>();
+        HashSet<String> acceptedFieldDataTypeList = new HashSet<String>();
           
+        acceptedFieldDataTypeList.add(Boolean.class.getName());
         acceptedFieldDataTypeList.add(Byte.class.getName());
         acceptedFieldDataTypeList.add(Short.class.getName());
         acceptedFieldDataTypeList.add(Integer.class.getName());
@@ -176,6 +191,7 @@ public class MultiIndex
         acceptedFieldDataTypeList.add(Double.class.getName());
         acceptedFieldDataTypeList.add(Character.class.getName());        
         acceptedFieldDataTypeList.add(String.class.getName());
+        
         
         return acceptedFieldDataTypeList;
     }
