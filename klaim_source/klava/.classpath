@@ -6,5 +6,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/DataGenerator"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/imc"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/momi"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/KlavaReplication"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

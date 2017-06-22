@@ -4,11 +4,11 @@ import java.io.IOException;
 import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import common.CustomPair;
 import klava.TupleSpace;
 
 
@@ -17,47 +17,47 @@ import klava.TupleSpace;
 
 public class TCPNIOEntity 
 {
-	String host;
-	public int port;
+    // physical address
+    IPAddress ipAddress = null;
 	
 	// listener
 	NIOListener nioListener = null;
+	//NIOSender sender;
 	
     Hashtable<String, NIOSender> senderTable = new Hashtable<String, NIOSender>();
 	
-    CustomPair<Long, TuplePack> pair = null;
+    // for tuple as response
+    ConcurrentHashMap<Long, NullableTuplePack> responseMap = new ConcurrentHashMap<>();
     
     final Lock dataPairLock = new ReentrantLock();
     final Condition responseIsBack = dataPairLock.newCondition();
-	
 	
 	// reference to local tuple space
 	TupleSpace tupleSpace;
 	
 	private Long operationSequenceID = 0L;
+	boolean withReplication = false;
 	
 	Queue<TuplePack> requestQueue = new LinkedList<TuplePack>();
-    private Thread processorThread; 
 	
-	
-	public TCPNIOEntity(int port, TupleSpace tupleSpace) throws IOException
+    public TCPNIOEntity(IPAddress ipAddress, TupleSpace tupleSpace, boolean withReplication) throws IOException
 	{
-	    this.port = port;
+	    this.ipAddress = ipAddress;
 	    this.tupleSpace = tupleSpace;
-		nioListener = new NIOListener(port, this);
+	    this.withReplication = withReplication;
+		nioListener = new NIOListener(ipAddress.getPort(), this, withReplication);
 		nioListener.start();
-
 	}
 	
-	public NIOSender getSender(int senderPort)
+	public NIOSender getSender(IPAddress ipAddress)
 	{
-	    String address = String.valueOf(senderPort);
+	    String address = String.valueOf(ipAddress.returnFullAddress());
 	    if(senderTable.containsKey(address))
 	    {
 	        return senderTable.get(address);
 	    } else
 	    {
-	        NIOSender newSender = new NIOSender(senderPort);
+	        NIOSender newSender = new NIOSender(ipAddress);
 	        senderTable.put(address, newSender);
 	        return newSender;
 	    }
@@ -73,7 +73,5 @@ public class TCPNIOEntity
         }
 	    return nexOperationID;
 	}
-    
-	
 	
 }

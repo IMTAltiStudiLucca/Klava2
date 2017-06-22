@@ -20,7 +20,7 @@ public class KlaimMatrixTest {
 	
 	public static void main(String[] args) throws NoSuchAlgorithmException, IOException {
 
-		int matrixSize = 25;
+		int matrixSize = 50;
 		int numberOfWorkers = 5;
 		
 		if(args.length == 2)
@@ -43,13 +43,13 @@ public class KlaimMatrixTest {
 	private static void beginScenario(int matrixSize, int numberOfWorkers) throws IMCException, KlavaException, InterruptedException
 	{					
 		PhysicalLocality serverPLoc = new PhysicalLocality("tcp-127.0.0.1:6001");
-		KlavaNode serverNode = new KlavaNode(serverPLoc);
+		KlavaNode serverNode = new KlavaNode(serverPLoc, false);
 		
 		ArrayList<KlavaNode> workerNodes = new ArrayList<KlavaNode>();
 		for(int i = 0; i< numberOfWorkers; i++ )
 		{
 			PhysicalLocality workPLoc = new PhysicalLocality("tcp-127.0.0.1:600" + (i+2));
-			KlavaNode workerNode = new KlavaNode(workPLoc); 
+			KlavaNode workerNode = new KlavaNode(workPLoc, false); 
 			workerNodes.add(workerNode);
 		}
 		

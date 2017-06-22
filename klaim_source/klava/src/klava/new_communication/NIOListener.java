@@ -48,11 +48,13 @@ public class NIOListener {
     // reference to local tuple space
 //    TupleSpace tupleSpace;
     TCPNIOEntity tcpnioEntity;
+    
+    boolean withReplication = false;
 	
-	public NIOListener(int port, TCPNIOEntity tcpnioEntity)
+	public NIOListener(int port, TCPNIOEntity tcpnioEntity, boolean withReplication)
 	{
-	    //this.tupleSpace = tcpnioEntity.tupleSpace; //tupleSpace;
 	    this.tcpnioEntity = tcpnioEntity;
+	    this.withReplication = withReplication;
 	    
 		try {
 			ssChannel = ServerSocketChannel.open();
@@ -216,12 +218,14 @@ public class NIOListener {
                     // because sometimes the progress of other processes depend on these tuples
                     if(taskNumber < threadPoolSize || (tPacket.operation != eTupleOperation.OUT && tPacket.operation != eTupleOperation.TUPLEBACK))
                     {
-                        Runnable t = new ProcessTuplePack(tPacket, tcpnioEntity.tupleSpace, tcpnioEntity);
+                        Runnable t = withReplication ? new ProcessTuplePackRE(tPacket, tcpnioEntity.tupleSpace, tcpnioEntity) :
+                            new ProcessTuplePackSE(tPacket, tcpnioEntity.tupleSpace, tcpnioEntity);
                         executor.execute(t);
                                          
                     } else
                     {
-                        Thread t = new ProcessTuplePack(tPacket, tcpnioEntity.tupleSpace, tcpnioEntity);
+                        Thread t = withReplication ? new ProcessTuplePackRE(tPacket, tcpnioEntity.tupleSpace, tcpnioEntity):
+                            new ProcessTuplePackSE(tPacket, tcpnioEntity.tupleSpace, tcpnioEntity);
                         t.start();
                     }
                                         

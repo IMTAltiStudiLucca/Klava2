@@ -29,6 +29,7 @@ import org.mikado.imc.topology.NodeCoordinatorProxy;
 import org.mikado.imc.topology.NodeProcessProxy;
 import org.mikado.imc.topology.RoutingTable;
 
+import klaim.localspace.TupleSpaceList;
 import klaim.localspace.TupleSpaceVector;
 import klava.Environment;
 import klava.EnvironmentLogicalLocalityResolver;
@@ -46,9 +47,13 @@ import klava.TupleSpace;
 import klava.WaitingForResponse;
 import klava.events.LoginSubscribeEvent;
 import klava.events.RouteEventListener;
+import klava.new_communication.IPAddress;
 import klava.new_communication.TCPNIOEntity;
 import klava.new_communication.TuplePack.eTupleOperation;
 import klava.new_communication.TupleSpaceInteraction;
+import klava.new_communication.TupleSpaceOperations;
+import klava.new_communication.TupleSpaceOperations.eOperationTypes;
+import klava.new_communication.TupleSpaceRepliOperations;
 import klava.proto.AcceptRegisterState;
 import klava.proto.ExecutionEngine;
 import klava.proto.LoginSubscribeState;
@@ -59,6 +64,7 @@ import klava.proto.TupleOpManagerFactory;
 import klava.proto.TupleOpState;
 import klava.proto.TuplePacket;
 import klava.proto.TupleResponse;
+import klava.replication.RepliTuple;
 
 
 /**
@@ -77,7 +83,11 @@ public class KlavaNode extends Node {
     
     // entity for communication
     public TCPNIOEntity tcpnioEntity;
-    PhysicalLocality newPhysLoc;
+    PhysicalLocality nodePhysicalLocality;
+    
+    Class<?> tupleSpaceClass = null;
+    Hashtable<String, List<Object>> settings = null;
+    boolean newCommunicationPart = true;
 
     /**
      * The RoutingTable
@@ -167,34 +177,33 @@ public class KlavaNode extends Node {
     }
     
 
-    public KlavaNode(PhysicalLocality physLoc) {
-        this.newPhysLoc = physLoc;
+    TupleSpaceOperations operationManager = null;
+    TupleSpaceRepliOperations operationRepliManager = null;
+    boolean withReplication = false;
+    
+    public KlavaNode(PhysicalLocality physLoc, boolean withReplication) {
         
-        /*
-         * added portion
-         */
-        try { 
-           this.tcpnioEntity = new TCPNIOEntity(physLoc.getSessionId().port, tupleSpace);
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-
+        this(physLoc, TupleSpaceList.class, withReplication);       
     }
     
-    public KlavaNode(PhysicalLocality physLoc, Class tupleSpaceClass) {
-        this.newPhysLoc = physLoc;
-        
+    public KlavaNode(PhysicalLocality physLoc, Class tupleSpaceClass, boolean withReplication) {
+        this.nodePhysicalLocality = physLoc;
+        this.tupleSpaceClass = tupleSpaceClass;
+                
         // create local tuple space and tcpnioEntity 
-        try { 
-           tupleSpace = (TupleSpace) tupleSpaceClass.newInstance();
-           this.tcpnioEntity = new TCPNIOEntity(physLoc.getSessionId().port, tupleSpace);
+        try {
+
+            tupleSpace = (TupleSpace) tupleSpaceClass.newInstance();
+            IPAddress ipAddress = new IPAddress(physLoc.getSessionId().ip, physLoc.getSessionId().port);
+            this.tcpnioEntity = new TCPNIOEntity(ipAddress, tupleSpace, withReplication);
+            this.operationManager = new TupleSpaceOperations(eOperationTypes.ORDINARY, tupleSpace, newCommunicationPart, tcpnioEntity, physLoc);
+            this.operationRepliManager = new TupleSpaceRepliOperations(eOperationTypes.ORDINARY, tupleSpace, newCommunicationPart, tcpnioEntity, physLoc);
         } catch (IOException | InstantiationException | IllegalAccessException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-
     }
+    
 
     /**
      * Initializes the node with a custom TupleSpace
@@ -711,7 +720,7 @@ public class KlavaNode extends Node {
     public void eval(KlavaProcess klavaProcess, Locality destination)
             throws KlavaException {
         PhysicalLocality realDestination = new PhysicalLocality();
-        if (checkLocalDestination(destination, newPhysLoc)) {
+        if (checkLocalDestination(destination, nodePhysicalLocality)) {
             /* this is a local operation */
             eval(klavaProcess);
             return;
@@ -756,7 +765,7 @@ public class KlavaNode extends Node {
      */
     public void out(Tuple tuple, Locality destination) throws KlavaException {
         PhysicalLocality realDestination = new PhysicalLocality();
-        if (checkLocalDestination(destination, newPhysLoc)) {
+        if (checkLocalDestination(destination, nodePhysicalLocality)) {
             /* this is a local operation */
             out(tuple);
             return;
@@ -842,7 +851,7 @@ public class KlavaNode extends Node {
      */
     public void in(Tuple tuple, Locality destination) throws KlavaException {
         PhysicalLocality realDestination = new PhysicalLocality();
-        if (checkLocalDestination(destination, newPhysLoc)) {
+        if (checkLocalDestination(destination, nodePhysicalLocality)) {
             /* this is a local operation */
             in(tuple);
             return;
@@ -871,7 +880,7 @@ public class KlavaNode extends Node {
     public boolean in_nb(Tuple tuple, Locality destination)
             throws KlavaException {
         PhysicalLocality realDestination = new PhysicalLocality();
-        if (checkLocalDestination(destination, newPhysLoc)) {
+        if (checkLocalDestination(destination, nodePhysicalLocality)) {
             /* this is a local operation */
             
             boolean result = in_nb(tuple);
@@ -909,7 +918,7 @@ public class KlavaNode extends Node {
     public boolean in_t(Tuple tuple, Locality destination, long timeout)
             throws KlavaException {
         PhysicalLocality realDestination = new PhysicalLocality();
-        if (checkLocalDestination(destination, newPhysLoc)) {
+        if (checkLocalDestination(destination, nodePhysicalLocality)) {
             /* this is a local operation */
             return in_t(tuple, timeout);
         }
@@ -977,7 +986,7 @@ public class KlavaNode extends Node {
      */
     public void read(Tuple tuple, Locality destination) throws KlavaException {
         PhysicalLocality realDestination = new PhysicalLocality();
-        if (checkLocalDestination(destination, newPhysLoc)) {
+        if (checkLocalDestination(destination, nodePhysicalLocality)) {
             /* this is a local operation */
             read(tuple);
             return;
@@ -1006,7 +1015,7 @@ public class KlavaNode extends Node {
     public boolean read_nb(Tuple tuple, Locality destination)
             throws KlavaException {
         PhysicalLocality realDestination = new PhysicalLocality();
-        if (checkLocalDestination(destination, newPhysLoc)) {
+        if (checkLocalDestination(destination, nodePhysicalLocality)) {
             /* this is a local operation */
             return read_nb(tuple);
         }
@@ -1040,7 +1049,7 @@ public class KlavaNode extends Node {
     public boolean read_t(Tuple tuple, Locality destination, long timeout)
             throws KlavaException {
         PhysicalLocality realDestination = new PhysicalLocality();
-        if (checkLocalDestination(destination, newPhysLoc)) {
+        if (checkLocalDestination(destination, nodePhysicalLocality)) {
             /* this is a local operation */
             return read_t(tuple, timeout);
         }
@@ -1290,7 +1299,7 @@ public class KlavaNode extends Node {
      */
     public PhysicalLocality getPhysical(Locality locality)
             throws KlavaException {
-        return newPhysLoc;
+        return nodePhysicalLocality;
   /*      
         //System.out.print("getPhysical(Locality locality)");
         if (locality instanceof PhysicalLocality) {
@@ -1771,6 +1780,55 @@ public class KlavaNode extends Node {
     public void setMigratingCodeFactory(
             MigratingCodeFactory migratingCodeFactory) {
         this.migratingCodeFactory = migratingCodeFactory;
+    }
+    
+    
+    /*
+     * for replication
+     */
+    public void outR(RepliTuple tuple, List<Locality> localities) throws KlavaException
+    {
+        operationRepliManager.out(tuple, localities);
+    }
+    
+    public void inR(RepliTuple tuple, List<Locality> localities) throws KlavaException, InterruptedException
+    {
+        operationRepliManager.getData(tuple, true, true, localities, (Locality)this.nodePhysicalLocality);
+    }
+    
+    public boolean in_nbR(RepliTuple tuple, List<Locality> localities) throws KlavaException, InterruptedException
+    {
+        return operationRepliManager.getData(tuple, false, true, localities, (Locality)this.nodePhysicalLocality);
+    }
+    
+    public void readR(RepliTuple tuple, List<Locality> localities) throws KlavaException, InterruptedException
+    {
+        operationRepliManager.getData(tuple, true, false, localities, (Locality)this.nodePhysicalLocality);
+    }
+    
+    public boolean read_nbR(RepliTuple tuple, List<Locality> localities) throws KlavaException, InterruptedException
+    {
+        return operationRepliManager.getData(tuple, false, false, localities, (Locality)this.nodePhysicalLocality);
+    }
+    
+    public void readR(RepliTuple tuple) throws KlavaException, InterruptedException
+    {
+        operationRepliManager.getDataLocally(tuple, true, false);
+    }
+    
+    public void inR(RepliTuple tuple) throws KlavaException, InterruptedException
+    {
+        operationRepliManager.getDataLocally(tuple, true, true);
+    }
+    
+    public boolean read_nbR(RepliTuple tuple) throws KlavaException, InterruptedException
+    {
+        return operationRepliManager.getDataLocally(tuple, false, false);
+    }
+    
+    public boolean in_nbR(RepliTuple tuple) throws KlavaException, InterruptedException
+    {
+        return operationRepliManager.getDataLocally(tuple, false, true);
     }
 
 }

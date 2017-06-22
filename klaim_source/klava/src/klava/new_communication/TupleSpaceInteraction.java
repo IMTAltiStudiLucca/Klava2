@@ -28,10 +28,12 @@ public class TupleSpaceInteraction
     {
         boolean operationResult = false;     
         TuplePack tPack = new TuplePack(operation, tuple, blocking, timeout);
+        tPack.lastSenderIPAddress = new IPAddress(sender.getSessionId().ip, sender.getSessionId().port);    
+        //tPack.senderPort = sender.getSessionId().port;             
+        //NIOSender nioSender = tcpnioEntity.getSender(receiver.getSessionId().port);
         
-        // getSessionId().port is not common
-        tPack.senderPort = sender.getSessionId().port;             
-        NIOSender nioSender = tcpnioEntity.getSender(receiver.getSessionId().port);
+        NIOSender nioSender = tcpnioEntity.getSender(new IPAddress(receiver.getSessionId().ip, receiver.getSessionId().port));
+        
         if(operation == eTupleOperation.OUT)
         {
             nioSender.write(tPack);
@@ -47,13 +49,8 @@ public class TupleSpaceInteraction
             tPack.operationID = nextOperationID;
             
             // it is necessary to wait for the response
-            tcpnioEntity.dataPairLock.lock();
-            if(tcpnioEntity.pair != null)
-                System.err.println("tupleOperation - mistake:tcpnioEntity.pair != null");
-              
-            tcpnioEntity.pair = new CustomPair<Long, TuplePack>(nextOperationID, null);
-            tcpnioEntity.dataPairLock.unlock();
-            
+            TupleSpaceInteractionWithReplication.setSynchObject(tcpnioEntity, nextOperationID);
+
             // send the packet with remote operation
             nioSender.write(tPack);
 
@@ -61,39 +58,29 @@ public class TupleSpaceInteraction
             {
                 tcpnioEntity.dataPairLock.lock();
 
+                // wait for the response
                 tcpnioEntity.responseIsBack.await();
-                
-           
-                if(!tcpnioEntity.pair.getKey().equals(nextOperationID))
-                    System.err.println("Mistake in nextOperationID");
-                    
-                    TuplePack resultPack = tcpnioEntity.pair.getValue();
-
-                    if(resultPack != null)
-                    {
-                        if(!blocking)
-                        {   
- //                           System.out.println(resultPack.senderPort + ":TupleSpaceInteraction:got_from_resptable");
-                    }
-                    
-                    if(resultPack.operation == eTupleOperation.TUPLEABSENT)
+                                
+                NullableTuplePack resultPack = tcpnioEntity.responseMap.get(nextOperationID);
+                if(resultPack != null)
+                {                   
+                    if(resultPack.getPacket().operation == eTupleOperation.TUPLEABSENT)
                         operationResult = false;
-                    else  if(resultPack.operation == eTupleOperation.TUPLEBACK)
+                    else  if(resultPack.getPacket().operation == eTupleOperation.TUPLEBACK)
                     {
-                        tuple.copy_tuple(resultPack.tuple);
+                        tuple.copy_tuple(resultPack.getPacket().tuple);
                         operationResult = true;
                     } else {
                         System.err.println("TupleSpaceInteraction: unknown state");
                     }
                     
-                    tcpnioEntity.pair = null;
+                    tcpnioEntity.responseMap.remove(nextOperationID);
                     break;
                 } 
                 else
                     System.err.println("TupleSpaceInteraction: resultPack == null");
                 
-             
-                tcpnioEntity.dataPairLock.unlock();              
+                tcpnioEntity.dataPairLock.unlock();             
             }
         } 
         return operationResult;        

@@ -28,8 +28,8 @@ public class PhysicalLocality extends Locality {
              * identifier
              */
             try {
-                sessionId = SessionId.parseSessionId("tcp"
-                        + SessionId.PROTO_SEPARATOR + l);
+                sessionId = SessionId.parseSessionId("tcp" + SessionId.PROTO_SEPARATOR + l);
+                //sessionId = SessionId.parseSessionId(l);
             } catch (ProtocolException e1) {
                 /* OK: there are real problems! */
                 throw new KlavaMalformedPhyLocalityException(l + " "
@@ -37,12 +37,13 @@ public class PhysicalLocality extends Locality {
             }
         }
 
-        locality = sessionId.toString();
+        locality = l;
     }
 
     public PhysicalLocality(String host, int port)
             throws KlavaMalformedPhyLocalityException {
-        this("tcp" + SessionId.PROTO_SEPARATOR + host + ":" + port);
+        //this("tcp" + SessionId.PROTO_SEPARATOR + host + ":" + port);
+        this(host + ":" + port);
     }
 
     public PhysicalLocality(PhysicalLocality l) {

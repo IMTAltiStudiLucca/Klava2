@@ -6,7 +6,7 @@ package klava.new_communication;
 import klava.TupleSpace;
 import klava.new_communication.TuplePack.eTupleOperation;
 
-public class ProcessTuplePack  extends Thread {
+public class ProcessTuplePackSE extends Thread {
 
 
     TuplePack tPacket;
@@ -15,7 +15,7 @@ public class ProcessTuplePack  extends Thread {
     
     TCPNIOEntity tcpnioEntity;
     
-    public ProcessTuplePack(TuplePack tPacket, TupleSpace tupleSpace, TCPNIOEntity tcpnioEntity) {
+    public ProcessTuplePackSE(TuplePack tPacket, TupleSpace tupleSpace, TCPNIOEntity tcpnioEntity) {
         this.tPacket = tPacket;
         this.tupleSpace = tupleSpace;
         this.tcpnioEntity = tcpnioEntity;
@@ -56,7 +56,7 @@ public class ProcessTuplePack  extends Thread {
                // #TODOVB
                // here we can use the same channel or use standard NIOSender
               // NIOSender sender = new NIOSender(tPacket.senderPort);
-               NIOSender sender = tcpnioEntity.getSender(tPacket.senderPort);
+               NIOSender sender = tcpnioEntity.getSender(tPacket.lastSenderIPAddress);
                eTupleOperation previousOp = tPacket.operation;
                if(result)
                {
@@ -90,32 +90,36 @@ public class ProcessTuplePack  extends Thread {
                
                // write a response
                //NIOSender sender = new NIOSender(tPacket.senderPort);
-               NIOSender sender = tcpnioEntity.getSender(tPacket.senderPort);
+               NIOSender sender = tcpnioEntity.getSender(tPacket.lastSenderIPAddress);
                sender.write(tPacket);                       
            }
        }
        else if(tPacket.operation == eTupleOperation.TUPLEABSENT || tPacket.operation == eTupleOperation.TUPLEBACK)
        {
            
-           // just find a request and insert result packet                     
-           tcpnioEntity.dataPairLock.lock();
-           {    
-               if(tcpnioEntity.pair == null)
-               {
-                   System.out.println("tPacket.operationID " + tPacket.operationID);
-                   System.out.println("tPacket.operation " + tPacket.operation);
-                   
-               }
-               if(tcpnioEntity.pair.getKey().equals(tPacket.operationID))
-               {                  
-                   tcpnioEntity.pair.setValue(tPacket);
-               }   
-               else
-                   System.err.println("Mistake in RequestProcessor");
-               
-               tcpnioEntity.responseIsBack.signal();
-           }
-           tcpnioEntity.dataPairLock.unlock();  
+           // just find a request and insert result packet   
+           ProcessTuplePackRE.notifyAboutNewPacket(tcpnioEntity, tPacket);
+           
+           
+//           // just find a request and insert result packet                     
+//           tcpnioEntity.dataPairLock.lock();
+//           {    
+//               if(tcpnioEntity.pair == null)
+//               {
+//                   System.out.println("tPacket.operationID " + tPacket.operationID);
+//                   System.out.println("tPacket.operation " + tPacket.operation);
+//                   
+//               }
+//               if(tcpnioEntity.pair.getKey().equals(tPacket.operationID))
+//               {                  
+//                   tcpnioEntity.pair.setValue(tPacket);
+//               }   
+//               else
+//                   System.err.println("Mistake in RequestProcessor");
+//               
+//               tcpnioEntity.responseIsBack.signal();
+//           }
+//           tcpnioEntity.dataPairLock.unlock();  
        }
        
        
