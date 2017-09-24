@@ -37,14 +37,14 @@ public class GraphProcessing
 	}
 	
 	
-	public static Integer getOwnerNode(GraphData graphData, ArrayList<Integer> replicaNodes)
-	{		
-		if (replicaNodes.size() == 1)
-			return replicaNodes.get(0);
-		else 
-		{
-			ArrayList<Integer> mostImportantNodes = BetweennessStrategy.getMostImportantVertices(graphData, replicaNodes, 1);
-			return mostImportantNodes.get(0);
-		}
-	}
+//	public static Integer getOwnerNode(GraphData graphData, ArrayList<Integer> replicaNodes)
+//	{		
+//		if (replicaNodes.size() == 1)
+//			return replicaNodes.get(0);
+//		else 
+//		{
+//			ArrayList<Integer> mostImportantNodes = BetweennessStrategy.getMostImportantVertices(graphData, replicaNodes, 1);
+//			return mostImportantNodes.get(0);
+//		}
+//	}
 }

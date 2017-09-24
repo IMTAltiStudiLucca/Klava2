@@ -3,9 +3,11 @@
  */
 package case_study.rooms;
 
+import klaim.localspace.TupleSpaceList;
 import klava.KlavaMalformedPhyLocalityException;
 import klava.PhysicalLocality;
 import klava.topology.KlavaNode;
+import klava.topology.KlavaNode.eReplicationType;
 
 public abstract class Sensor {
     
@@ -20,7 +22,7 @@ public abstract class Sensor {
     public Sensor(String name, String address) throws KlavaMalformedPhyLocalityException {
         this.name = name;
         this.address = address;
-        localNode = new KlavaNode(new PhysicalLocality(address), true);
+        localNode = new KlavaNode(new PhysicalLocality(address), TupleSpaceList.class, eReplicationType.TOPOLOGY_REPLICATION);
     }
     
     public String getName() {

@@ -88,6 +88,8 @@ public class KlavaNode extends Node {
     Class<?> tupleSpaceClass = null;
     Hashtable<String, List<Object>> settings = null;
     boolean newCommunicationPart = true;
+    
+    public enum eReplicationType {NONE, TOPOLOGY_REPLICATION, SIMPLE_REPLICATION};
 
     /**
      * The RoutingTable
@@ -179,14 +181,18 @@ public class KlavaNode extends Node {
 
     TupleSpaceOperations operationManager = null;
     TupleSpaceRepliOperations operationRepliManager = null;
-    boolean withReplication = false;
     
-    public KlavaNode(PhysicalLocality physLoc, boolean withReplication) {
+    public KlavaNode(PhysicalLocality physLoc) {
         
-        this(physLoc, TupleSpaceList.class, withReplication);       
+        this(physLoc, TupleSpaceList.class, eReplicationType.NONE);       
     }
     
-    public KlavaNode(PhysicalLocality physLoc, Class tupleSpaceClass, boolean withReplication) {
+    public KlavaNode(PhysicalLocality physLoc, Class tupleSpaceClass) {
+        
+        this(physLoc, tupleSpaceClass, eReplicationType.NONE);       
+    }
+    
+    public KlavaNode(PhysicalLocality physLoc, Class tupleSpaceClass, eReplicationType replicationType) {
         this.nodePhysicalLocality = physLoc;
         this.tupleSpaceClass = tupleSpaceClass;
                 
@@ -195,7 +201,7 @@ public class KlavaNode extends Node {
 
             tupleSpace = (TupleSpace) tupleSpaceClass.newInstance();
             IPAddress ipAddress = new IPAddress(physLoc.getSessionId().ip, physLoc.getSessionId().port);
-            this.tcpnioEntity = new TCPNIOEntity(ipAddress, tupleSpace, withReplication);
+            this.tcpnioEntity = new TCPNIOEntity(ipAddress, tupleSpace, replicationType);
             this.operationManager = new TupleSpaceOperations(eOperationTypes.ORDINARY, tupleSpace, newCommunicationPart, tcpnioEntity, physLoc);
             this.operationRepliManager = new TupleSpaceRepliOperations(eOperationTypes.ORDINARY, tupleSpace, newCommunicationPart, tcpnioEntity, physLoc);
         } catch (IOException | InstantiationException | IllegalAccessException e) {

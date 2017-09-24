@@ -67,14 +67,14 @@ public class KlaimImpDistSortTest {
 	{	
 		// create server physical locality
 		PhysicalLocality serverPLoc = new PhysicalLocality("tcp-127.0.0.1:6001");
-		KlavaNode serverNode = new KlavaNode(serverPLoc, false);
+		KlavaNode serverNode = new KlavaNode(serverPLoc);
 		
 		// create all worker nodes
 		ArrayList<KlavaNode> workerNodes = new ArrayList<KlavaNode>();
 		for(int i = 0; i< numberOfWorkers; i++ )
 		{
 			PhysicalLocality workPLoc = new PhysicalLocality("tcp-127.0.0.1:600" + (i+2));
-			KlavaNode workerNode = new KlavaNode(workPLoc, false);
+			KlavaNode workerNode = new KlavaNode(workPLoc);
 			workerNodes.add(workerNode);
 		}
 		

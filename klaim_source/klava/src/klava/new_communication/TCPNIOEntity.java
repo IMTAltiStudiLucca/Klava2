@@ -10,6 +10,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import klava.TupleSpace;
+import klava.topology.KlavaNode.eReplicationType;
 
 
 // Requirements:
@@ -36,16 +37,14 @@ public class TCPNIOEntity
 	TupleSpace tupleSpace;
 	
 	private Long operationSequenceID = 0L;
-	boolean withReplication = false;
 	
 	Queue<TuplePack> requestQueue = new LinkedList<TuplePack>();
 	
-    public TCPNIOEntity(IPAddress ipAddress, TupleSpace tupleSpace, boolean withReplication) throws IOException
+    public TCPNIOEntity(IPAddress ipAddress, TupleSpace tupleSpace, eReplicationType replicationType) throws IOException
 	{
 	    this.ipAddress = ipAddress;
 	    this.tupleSpace = tupleSpace;
-	    this.withReplication = withReplication;
-		nioListener = new NIOListener(ipAddress.getPort(), this, withReplication);
+		nioListener = new NIOListener(ipAddress.getPort(), this, replicationType != eReplicationType.NONE);
 		nioListener.start();
 	}
 	

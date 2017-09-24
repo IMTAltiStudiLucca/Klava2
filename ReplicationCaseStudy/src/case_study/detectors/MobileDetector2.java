@@ -7,9 +7,11 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import klaim.localspace.SeparableRepliListTupleSpace;
 import klava.KlavaException;
@@ -21,7 +23,7 @@ import klava.replication.eConsistencyLevel;
 import klava.topology.KlavaNode;
 import klava.topology.KlavaNode.eReplicationType;
 
-public class MobileDetector {
+public class MobileDetector2 {
     PointStruct centerCoordinates = null;
     double radius;
     String name;
@@ -35,7 +37,7 @@ public class MobileDetector {
     KlavaNode localNode;
     Hashtable<Integer, MobileDevice> internalListOfDetectedDevices = null;
     
-    public MobileDetector(int identifier, PointStruct centerCoordinates, double radius, String name, WirelessEnvironment wEnvironment) throws KlavaMalformedPhyLocalityException
+    public MobileDetector2(int identifier, PointStruct centerCoordinates, double radius, String name, WirelessEnvironment wEnvironment) throws KlavaMalformedPhyLocalityException
     {
         this.centerCoordinates = centerCoordinates;
         this.radius = radius;
@@ -64,7 +66,7 @@ public class MobileDetector {
                     try {
                         detect();
                         
-                        boolean res = checkNeighbourDetectors();
+                        boolean res = checkNeighbourDetectors().size() > 0;
                         if(res)
                             informedDeviceCount = 1;
                         else
@@ -139,72 +141,58 @@ public class MobileDetector {
 
         return isChanged;
     }
-    private static void putIntoTupleSpace(KlavaNode node, int detectorIdentifier, MobileDevice dev) throws KlavaException {
-        
-        RepliTuple detectedDeviceTuple = new RepliTuple(new Object[]{"devices_detected", detectorIdentifier, dev.getIdentifier()});
-        detectedDeviceTuple.setConsistencyLevel(eConsistencyLevel.WEAK);
-        
-        // get groups to put a tuple
-        List<Integer> neighbours = MobileDetectorApp.getNeighbourGroup(detectorIdentifier);
-        
-        List<Locality> localities = new ArrayList<Locality>();
-        for(int i=0; i<neighbours.size(); i++) {
-            Integer detectorID = neighbours.get(i);
-            PhysicalLocality locality = new PhysicalLocality(MobileDetectorApp.convertIdentifierToAddress(detectorID));
-            localities.add(locality);
-        }
-        node.outR(detectedDeviceTuple, localities);
-    }
-    
-    private static void removeFromTupleSpace(KlavaNode node, int detectorIdentifier, MobileDevice dev) throws KlavaException, InterruptedException {
-        
-        RepliTuple detectedDeviceTuple = new RepliTuple(new Object[]{"devices_detected", detectorIdentifier, dev.getIdentifier()});
-        detectedDeviceTuple.setConsistencyLevel(eConsistencyLevel.WEAK);
-        
-        // get groups to put a tuple
-        List<Integer> neighbours = MobileDetectorApp.getNeighbourGroup(detectorIdentifier);
-        List<Locality> localities = new ArrayList<Locality>();
-        for(int i=0; i<neighbours.size(); i++) {
-            Integer detectorID = neighbours.get(i);
-            PhysicalLocality locality = new PhysicalLocality(MobileDetectorApp.convertIdentifierToAddress(detectorID));
-            localities.add(locality);
-        }
-        node.in_nbR(detectedDeviceTuple, localities);
-    }
+   
+	void putIntoTupleSpace(KlavaNode node, int detectorIdentifier, MobileDevice dev) throws KlavaException, InterruptedException 
+	{
+		RepliTuple detectedDeviceTuple = new RepliTuple(new Object[]{"devices_detected", detectorIdentifier, dev.getIdentifier()});
+		detectedDeviceTuple.setConsistencyLevel(eConsistencyLevel.WEAK);
+		List<Integer> neighbours = MobileDetectorApp.getNeighbourGroup(this.identifier);
 
-    private static List<Locality> convertToLocations(int detectorIdentifier)
-            throws KlavaMalformedPhyLocalityException {
+		for(int i=0; i<neighbours.size(); i++) {
+			List<Locality> localityGroup = getLocGroup(neighbours.get(i));
+			localNode.outR(detectedDeviceTuple, localityGroup);
+		}
+		return;
+	}
+	
+	void removeFromTupleSpace(KlavaNode node, int detectorIdentifier, MobileDevice dev) throws KlavaException, InterruptedException 
+	{
+		RepliTuple detectedDeviceTuple = new RepliTuple(new Object[]{"devices_detected", detectorIdentifier, dev.getIdentifier()});
+		List<Integer> neighbours = MobileDetectorApp.getNeighbourGroup(this.identifier);
+
+		for(int i=0; i<neighbours.size(); i++) {
+			List<Locality> localityGroup = getLocGroup(neighbours.get(i));
+			localNode.in_nbR(detectedDeviceTuple, localityGroup);
+		}
+		return;
+	}
+	
+	private Set<Integer> checkNeighbourDetectors() throws KlavaException, InterruptedException {
+
+		if(identifier == 3)
+			System.out.println("aaaa");
+		Set<Integer> foundDevices = new HashSet<>(); 
+		RepliTuple detectedDeviceTuple = new RepliTuple(new Object[]{"devices_detected", Integer.class, Integer.class});
+		// find a group associated with the current detector
+		List<Locality> locGroup = getLocGroup(this.identifier);
+		boolean res = localNode.read_nbR(detectedDeviceTuple, locGroup);
+		if(res)
+			foundDevices.add((Integer)detectedDeviceTuple.getItem(1));
+		return foundDevices;	
+	}
+    
+	private static List<Locality> getLocGroup(int detectorIdentifier) throws KlavaMalformedPhyLocalityException {
+		// get groups to put a tuple
         List<Integer> neighbours = MobileDetectorApp.getNeighbourGroup(detectorIdentifier);
-               
-        List<Locality> localities = new ArrayList<Locality>();
+        
+        List<Locality> locGroup = new ArrayList<Locality>();
         for(int i=0; i<neighbours.size(); i++) {
             Integer detectorID = neighbours.get(i);
             PhysicalLocality locality = new PhysicalLocality(MobileDetectorApp.convertIdentifierToAddress(detectorID));
-            localities.add(locality); 
+            locGroup.add(locality);
         }
-        return localities;
-    }
-    
-    
-    boolean checkNeighbourDetectors() throws KlavaException, InterruptedException 
-    {
-        List<Integer> neighbours = MobileDetectorApp.getNeighbourGroup(this.identifier);
-
-        for(int i=0; i<neighbours.size(); i++) {
-            
-            RepliTuple detectedDeviceTuple = new RepliTuple(new Object[]{"devices_detected", Integer.class, Integer.class});
-            List<Locality> localities = convertToLocations(neighbours.get(i));
-            boolean result = localNode.read_nbR(detectedDeviceTuple, localities);
-            if(result) {
-                detectedDeviceTuple = new RepliTuple(new Object[]{"devices_detected", Integer.class, Integer.class});
-                result = localNode.read_nbR(detectedDeviceTuple, localities);
-                return result;
-                
-            }
-        }
-        
-        return false;
-    }
+		return locGroup;
+	}
     
     public static void printCurrentTime()
     {

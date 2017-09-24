@@ -47,7 +47,7 @@ public class MobileDevice {
 //    }
 
     private synchronized void updatePosition(PointStruct currentPosition) {
-        double xShift = (r.nextDouble()*2.0 - 1.0)*velocity*2;
+        double xShift = (r.nextDouble()*2.0 - 1.0)*velocity*1;
         double yShift = (r.nextDouble()*2.0 - 1.0)*velocity;
         
         double newXPos = currentPosition.getX() + xShift;

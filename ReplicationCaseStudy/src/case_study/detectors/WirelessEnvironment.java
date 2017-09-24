@@ -4,6 +4,7 @@
 package case_study.detectors;
 
 import java.util.ArrayList;
+import java.util.Hashtable;
 import java.util.List;
 
 public class WirelessEnvironment {
@@ -23,9 +24,9 @@ public class WirelessEnvironment {
         devices.add(device);
     }
     
-    public synchronized List<MobileDevice> detectDevices(PointStruct decectorCenter)
+    public synchronized Hashtable<Integer, MobileDevice> detectDevices(PointStruct decectorCenter)
     {
-        List<MobileDevice> detectedDevices = new ArrayList<MobileDevice>();  
+    	Hashtable<Integer, MobileDevice> detectedDevices = new Hashtable<>();  
         
         for(int i=0; i<devices.size(); i++)
         {
@@ -33,7 +34,7 @@ public class WirelessEnvironment {
             PointStruct currentPosition = dev.getCurrentPosition();
             Double distance = PointStruct.getDistanceBetweenPoints(currentPosition, decectorCenter);
             if(distance <= distanceForDetection)
-                detectedDevices.add(dev);
+                detectedDevices.put(dev.getIdentifier(), dev);
         }
         
         return detectedDevices;

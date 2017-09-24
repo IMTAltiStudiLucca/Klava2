@@ -19,8 +19,8 @@ public class MobileDetectorApp {
     
     public static void main(String[] args) throws KlavaException, InterruptedException {
         
-        int nCol = 7;
-        int nRow = 3;
+        int nCol = 5;
+        int nRow = 5;
         int nMobDev = 1;
         
         neighbourGroups = creatGroups(nCol, nRow);
@@ -30,24 +30,21 @@ public class MobileDetectorApp {
         ArrayList<PointStruct> centerList = new ArrayList<>();
         for(int i=0; i<mdList.size(); i++)
             centerList.add(mdList.get(i).centerCoordinates);
-        
-//        DetectorsGUI mp = new DetectorsGUI();
-//        mp.paintCircles(mdList, wEnvironment);
+  
     }
       
     static void beginScenario(int nCol, int nRow, int nMobDev ) throws KlavaMalformedPhyLocalityException
     {
-
         wEnvironment = new WirelessEnvironment(distanceForDetection);
         
         // init mobile detectors
-        for(int i=0; i<nCol; i++)
-            for(int j=0; j<nRow; j++)
+        for(int i=0; i<nRow; i++)
+            for(int j=0; j<nCol; j++)
             {
                 String name = formName(i, j);
-                double xCenter = distanceForDetection + 2*i*distanceForDetection - i*0.25*distanceForDetection;
-                double yCenter = distanceForDetection + 2*j*distanceForDetection - j*0.25*distanceForDetection;
-                MobileDetector md = new MobileDetector(formIdentifier(nCol, i, j),new PointStruct(xCenter, yCenter), 
+                double xCenter = distanceForDetection + 2*j*distanceForDetection - j*0.25*distanceForDetection;
+                double yCenter = distanceForDetection + 2*i*distanceForDetection - i*0.25*distanceForDetection;
+                MobileDetector md = new MobileDetector(formIdentifier(nCol, i, j), new PointStruct(xCenter, yCenter), 
                         distanceForDetection, 
                         name,
                         wEnvironment
@@ -59,7 +56,7 @@ public class MobileDetectorApp {
 
         // init mobile devices
         for(int i=0; i<nMobDev; i++) {
-            MobileDevice mobDev = new MobileDevice(i, new PointStruct(0, 0));
+            MobileDevice mobDev = new MobileDevice(i, new PointStruct(100, 100));
             mobDev.start();
             
             // attach to the environment
@@ -101,9 +98,9 @@ public class MobileDetectorApp {
         return String.valueOf(first) + "_" + String.valueOf(second);
     }
     
-    public static Integer formIdentifier(int nCol, int colID, int rowID)
+    public static Integer formIdentifier(int nCol, int rowID, int colID)
     {
-        return colID*nCol + rowID;
+        return 0 + rowID*nCol + colID;
     }   
     
     
@@ -112,8 +109,8 @@ public class MobileDetectorApp {
     {
         Hashtable<Integer, List<Integer>> groups = new Hashtable<Integer, List<Integer>>();
         
-        for(int i=0; i<nCol; i++)
-            for(int j=0; j<nRow; j++)
+        for(int i=0; i<nRow; i++)
+            for(int j=0; j<nCol; j++)
             {
                 Integer identifier = formIdentifier(nCol, i, j);
                 ArrayList<Integer> neighbours = new ArrayList<>();
@@ -121,17 +118,18 @@ public class MobileDetectorApp {
 
                   if(i>0)
                       neighbours.add(formIdentifier(nCol, i-1, j));
-                  if(i<nCol-1)
+                  if(i<nRow-1)
                       neighbours.add(formIdentifier(nCol, i+1, j));
                   if(j>0)
                       neighbours.add(formIdentifier(nCol, i, j-1));
-                  if(j<nRow-1)
+                  if(j<nCol-1)
                       neighbours.add(formIdentifier(nCol, i, j+1));   
                 
                 
                 groups.put(identifier, neighbours);
             }
         
+        System.out.println(groups);
         return groups;
     }
     

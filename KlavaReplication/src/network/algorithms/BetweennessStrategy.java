@@ -15,7 +15,7 @@ import network.structures.Pair;
 
 
 
-public class BetweennessStrategy {
+public class BetweennessStrategy implements IReplicationStrategy {
 
 
 	public static void main(String[] args) 
@@ -32,7 +32,8 @@ public class BetweennessStrategy {
 
 		
 		//Graph<Integer, String> subgraph = graphData.getSubgraph(nodes);
-		ArrayList<Integer> topVertices = getMostImportantVertices(graphData, nodes, 10);
+		BetweennessStrategy replicationStraategy = new BetweennessStrategy();
+		ArrayList<Integer> topVertices = replicationStraategy.getReplicaNodes(graphData, nodes, 10);
 		System.out.println(topVertices); 
 	
 	
@@ -40,8 +41,8 @@ public class BetweennessStrategy {
 //		System.out.println("finished");
 	}
 	
-	
-	public static ArrayList<Integer> getMostImportantVertices(GraphData graphData, List<Integer> nodes, int topVerticesNumber)
+	@Override
+	public ArrayList<Integer> getReplicaNodes(GraphData graphData, List<Integer> nodes, int topVerticesNumber)
 	{
 		Graph<Integer, String> subgraph = graphData.getSubgraph(nodes);
 		
@@ -151,6 +152,17 @@ public class BetweennessStrategy {
 //    	
 //    	BetweennessCentrality<Integer,Character> bc = 
 //    		new BetweennessCentrality<Integer,Character>(graph, edge_weights);	
+	}
+
+	@Override
+	public Integer getOwnerNode(GraphData graphData, ArrayList<Integer> replicaNodes) {	
+		if (replicaNodes.size() == 1)
+			return replicaNodes.get(0);
+		else 
+		{
+			ArrayList<Integer> mostImportantNodes = getReplicaNodes(graphData, replicaNodes, 1);
+			return mostImportantNodes.get(0);
+		}
 	}
 
 

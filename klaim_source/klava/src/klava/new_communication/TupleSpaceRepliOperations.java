@@ -18,6 +18,7 @@ import klava.new_communication.TupleSpaceOperations.eOperationTypes;
 import klava.replication.RepliTuple;
 import network.algorithms.BetweennessStrategy;
 import network.algorithms.GraphProcessing;
+import network.algorithms.IReplicationStrategy;
 import network.structures.GraphData;
 
 public class TupleSpaceRepliOperations 
@@ -29,6 +30,7 @@ public class TupleSpaceRepliOperations
     boolean newCommunicationPart;
     PhysicalLocality nodePhysicalLocality;
     TCPNIOEntity tcpnioEntity;
+    IReplicationStrategy replicationStrategy = new BetweennessStrategy();
     
     // TODO - factory class??
     public TupleSpaceRepliOperations(eOperationTypes type, TupleSpace tupleSpace, boolean newCommunicationPart, TCPNIOEntity tcpnioEntity, PhysicalLocality nodePhysicalLocality)
@@ -46,13 +48,13 @@ public class TupleSpaceRepliOperations
         GraphData graphData = GraphData.loadGraph("data\\all_pairs_hops_sf100.txt", "data\\all_pairs_distance_sf100.txt");
         
         List<Integer> nodeIDs = TupleSpaceRepliOperations.localitiesToNodeIDs(localitiesToShare);
-        ArrayList<Integer> replicationNodes = BetweennessStrategy.getMostImportantVertices(graphData, nodeIDs, numberOfReplics);
+        ArrayList<Integer> replicationNodes = replicationStrategy.getReplicaNodes(graphData, nodeIDs, numberOfReplics);
 
         // get the list of the replication nodes
         List<Locality> replicationLocalities = TupleSpaceRepliOperations.nodeIDsToLocalities(replicationNodes);
         
         // set owner
-        Integer ownerNodeID = GraphProcessing.getOwnerNode(graphData, replicationNodes); //choose owner, maybe center of the network of replications nodes
+        Integer ownerNodeID = replicationStrategy.getOwnerNode(graphData, replicationNodes); //choose owner, maybe center of the network of replications nodes
 
         Locality ownerLocality = nodeIDToLocality(ownerNodeID);
         tuple.setOwner(ownerLocality.toString());
@@ -78,7 +80,7 @@ public class TupleSpaceRepliOperations
         GraphData graphData = GraphData.loadGraph("data\\all_pairs_hops_sf100.txt", "data\\all_pairs_distance_sf100.txt");
         
         List<Integer> nodeIDs = TupleSpaceRepliOperations.localitiesToNodeIDs(localitiesToShare);
-        ArrayList<Integer> replicationNodes = BetweennessStrategy.getMostImportantVertices(graphData, nodeIDs, numberOfReplics);
+        ArrayList<Integer> replicationNodes = replicationStrategy.getReplicaNodes(graphData, nodeIDs, numberOfReplics);
         
         
         int currentNodeID = localityToNodeID(currentLocality);
