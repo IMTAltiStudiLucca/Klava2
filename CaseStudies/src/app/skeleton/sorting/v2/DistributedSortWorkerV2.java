@@ -5,12 +5,10 @@ import java.util.Hashtable;
 
 import app.operations.TupleOperations;
 import app.skeleton.matrix.DistributedMatrixMaster;
-import app.skeleton.sorting.v2.DistributedSortMasterV2;
+import apps.sorting.QSort;
 import common.TupleLogger;
 import interfaces.ITupleSpace;
 import profiler.DProfiler;
-import proxy.gigaspaces.QSort;
-import proxy.tupleware.TuplewareProxy;
 
 
 public class DistributedSortWorkerV2<T extends ITupleSpace> {

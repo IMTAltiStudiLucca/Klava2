@@ -1,4 +1,4 @@
-package app.launcher.search.implementations;
+package app.launcher.search;
 
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
@@ -6,10 +6,10 @@ import java.util.ArrayList;
 
 import app.skeleton.passwordsearch.DistributedSearchMasterThread;
 import app.skeleton.passwordsearch.DistributedSearchWorkerThread;
-import proxy.tupleware.TuplewareProxy;
+import proxy.mozartspaces.MozartProxy;
 
 
-public class TuplewareImpSearchTest {
+public class MozartImpSearchTest {
 
 	public static void main(String[] args) throws NoSuchAlgorithmException, IOException 
 	{
@@ -46,10 +46,10 @@ public class TuplewareImpSearchTest {
 	
 	private static void beginScenario(int numberOfElements, int numberOfWorkers)
 	{			
-		int portNumber = 6001;
+		int masterPortNumber = 6001;
 		// start tuple space server			
 		// start master thread
-		DistributedSearchMasterThread<TuplewareProxy> mThread = new DistributedSearchMasterThread<TuplewareProxy>(portNumber, numberOfElements, numberOfWorkers,  TuplewareProxy.class); 
+		DistributedSearchMasterThread<MozartProxy> mThread = new DistributedSearchMasterThread<MozartProxy>(masterPortNumber, numberOfElements, numberOfWorkers,  MozartProxy.class); 
         mThread.start();
         
         try {
@@ -57,16 +57,21 @@ public class TuplewareImpSearchTest {
 		} catch (InterruptedException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
-		}
-      		
-		// start worker Threads
-		ArrayList<Object> allWorkers = new ArrayList<Object>();		
-		for(int i=0; i < numberOfWorkers; i++)
+		}		
+				
+        // start worker Threads	
+		for(int i = 0; i< numberOfWorkers; i++ )
 		{
-			DistributedSearchWorkerThread<TuplewareProxy> wThread = new DistributedSearchWorkerThread<TuplewareProxy>(portNumber + 1 + i, i, 6001, allWorkers, numberOfElements, numberOfWorkers, TuplewareProxy.class);       
-	        wThread.start();
-	        try {
-				Thread.sleep(1000);
+			ArrayList<Object> nodesExceptThatNodeList = new ArrayList<Object>();
+			for(int n = 0; n < numberOfWorkers; n++)
+			{
+				if(i != n)
+					nodesExceptThatNodeList.add(masterPortNumber + 1 + n);
+			}
+			DistributedSearchWorkerThread<MozartProxy> workerThread = new DistributedSearchWorkerThread<MozartProxy>(masterPortNumber + 1 + i, i, masterPortNumber, nodesExceptThatNodeList, 0, numberOfWorkers, MozartProxy.class);
+			workerThread.start();
+			try {
+				Thread.sleep(50);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

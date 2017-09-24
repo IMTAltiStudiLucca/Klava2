@@ -1,4 +1,4 @@
-package app.launcher.ocean.implementations;
+package app.launcher.ocean;
 
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
@@ -6,15 +6,16 @@ import java.util.ArrayList;
 
 import app.skeleton.ocean.DistributedOceanModelMasterThread;
 import app.skeleton.ocean.DistributedOceanModelWorkerThread;
-import proxy.mozartspaces.MozartProxy;
+import proxy.tupleware.TuplewareProxy;
 
 
-public class MozartOceanModelTest {
+public class TuplewareOceanModelTest {
 
 	public static void main(String[] args) throws NoSuchAlgorithmException, IOException 
 	{
+		
 		int gridSize = 600;
-		int numberOfWorkers = 15;
+		int numberOfWorkers = 5;
 		
 		if(args.length == 2)
 		{
@@ -30,11 +31,10 @@ public class MozartOceanModelTest {
 	
 	private static void beginScenario(int gridSize, int numberOfWorkers)
 	{			
-		
-		int masterPortNumber = 6001;
+		int portNumber = 6001;
 		// start tuple space server			
 		// start master thread
-		DistributedOceanModelMasterThread<MozartProxy> mThread = new DistributedOceanModelMasterThread<MozartProxy>(masterPortNumber, gridSize, numberOfWorkers,  MozartProxy.class); 
+		DistributedOceanModelMasterThread<TuplewareProxy> mThread = new DistributedOceanModelMasterThread<TuplewareProxy>(portNumber, gridSize, numberOfWorkers,  TuplewareProxy.class); 
         mThread.start();
         
         try {
@@ -44,26 +44,20 @@ public class MozartOceanModelTest {
 			e1.printStackTrace();
 		}
       		
-		// start worker Threads	
-		for(int i = 0; i< numberOfWorkers; i++ )
+		// start worker Threads
+		ArrayList<Object> allWorkers = new ArrayList<Object>();		
+		for(int i=0; i < numberOfWorkers; i++)
 		{
-			ArrayList<Object> nodesExceptThatNodeList = new ArrayList<Object>();
-			for(int n = 0; n < numberOfWorkers; n++)
-			{
-				if(i != n)
-					nodesExceptThatNodeList.add(masterPortNumber + 1 + n);
-			}
-			DistributedOceanModelWorkerThread<MozartProxy> workerThread = new DistributedOceanModelWorkerThread<MozartProxy>(masterPortNumber + 1 + i, i, masterPortNumber, nodesExceptThatNodeList, gridSize, numberOfWorkers, MozartProxy.class);
-			workerThread.start();
-			try {
-				Thread.sleep(50);
+			DistributedOceanModelWorkerThread<TuplewareProxy> wThread = new DistributedOceanModelWorkerThread<TuplewareProxy>(portNumber + 1 + i, i, 6001, allWorkers, gridSize, numberOfWorkers, TuplewareProxy.class);       
+	        wThread.start();
+	        try {
+				Thread.sleep(1000);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
-
-        
+     
         System.out.println("process creation is finished");
 	}
 	

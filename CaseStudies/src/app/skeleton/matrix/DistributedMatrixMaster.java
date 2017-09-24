@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Random;
 
-import app.launcher.matrix.implementations.GetDataFromDockers;
+import app.launcher.matrix.GetDataFromDockers;
 import app.operations.TupleOperations;
 import common.TupleLogger;
 import interfaces.ITupleSpace;

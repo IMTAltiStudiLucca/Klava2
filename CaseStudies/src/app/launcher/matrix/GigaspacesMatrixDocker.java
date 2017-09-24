@@ -1,4 +1,4 @@
-package app.launcher.matrix.implementations;
+package app.launcher.matrix;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -9,16 +9,15 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 
-import app.launcher.sorting.implementations.GigaspacesImpDistSortTest;
-import app.skeleton.matrix.DistributedMatrixMasterThread;
-import app.skeleton.matrix.DistributedMatrixWorkerThread;
+import app.skeleton.matrix.DistributedMatrixMaster;
+import app.skeleton.matrix.DistributedMatrixWorker;
 import proxy.gigaspaces.GigaSpaceProxy;
 
 
-public class GigaspacesMatrixNetwork {
+public class GigaspacesMatrixDocker {
 
 	public static int gigaspacesPort = 4174;
-	public static int ipShift = 1;
+	public static int ipShift = 0;
 	
 	public static void main(String[] args) throws NoSuchAlgorithmException, IOException, InterruptedException {
 		
@@ -42,46 +41,52 @@ public class GigaspacesMatrixNetwork {
 		System.out.println("done");
 	}
 
-	private static void startNetworkClient(int matrixSize, int numberOfWorkers, String ipBase) throws FileNotFoundException, IOException, InterruptedException
+	private static void startNetworkClient(int matrixSize, int numberOfWorkers, String ipBase) throws FileNotFoundException, IOException, InterruptedException, NoSuchAlgorithmException
 	{			
 		String currentIP = getDockerIP();
 		System.out.println("currentIP:" + currentIP);
 				
 		String masterIP = ipBase + "." + (1 + ipShift);
-		String masterIPAddress = masterIP + ":" + String.valueOf(gigaspacesPort);
-		String masterSpaceAddress = "jini://" + masterIPAddress + "/*/client";
+		//String masterIPAddress = masterIP + ":" + String.valueOf(gigaspacesPort);
+		String masterSpaceAddress = "jini://" + masterIP + "/*/master";
 		
 		System.out.println("masterSpaceAddress:" + masterSpaceAddress);
 		
 		String localSpaceAddress = "jini://" + currentIP + ":" + String.valueOf(gigaspacesPort)+ "/*/client";
 				
 		// starting space
-		GigaSpaceProxy spaceGS = new GigaSpaceProxy();
-		spaceGS.startTupleSpace("/./client");
+	//	GigaSpaceProxy spaceGS = new GigaSpaceProxy();
+	//	spaceGS.startTupleSpace("/./client");
 
-		Thread.sleep(5000 + numberOfWorkers*1000);
+		//Thread.sleep(5000 + numberOfWorkers*1000);
 		
 		if(currentIP.equals(masterIP))
 		{		
+			System.out.println("starting master process");
 			// start master thread
-			DistributedMatrixMasterThread<GigaSpaceProxy> mThread = new DistributedMatrixMasterThread<GigaSpaceProxy>(localSpaceAddress, matrixSize, numberOfWorkers,  GigaSpaceProxy.class); 
-	        mThread.start();
+			//DistributedMatrixMasterNetThread<GigaSpaceProxy> mThread = new DistributedMatrixMasterNetThread<GigaSpaceProxy>(localSpaceAddress, matrixSize, numberOfWorkers,  GigaSpaceProxy.class); 
+	        //mThread.start();
+			
+			new DistributedMatrixMaster<GigaSpaceProxy>(masterSpaceAddress, matrixSize, numberOfWorkers, GigaSpaceProxy.class).start();
+			
 		} else
 		{
+			Thread.sleep(5000);
+			
 			Integer workerID = Integer.valueOf(currentIP.replaceAll(ipBase + ".", "")) - (1 + 1 + ipShift);
-//			String workerSpaceAddress = "jini://" + workerIP + "/*/client";
 					
 			ArrayList<Object> otherWorkerTSName = new ArrayList<Object>();
 			for(int i = 0; i < numberOfWorkers; i++)
 			{
 				if(workerID != i) {
-					String otherWorkerIP = ipBase + "." + String.valueOf(i + 1 + 1 + ipShift) + ":" + String.valueOf(gigaspacesPort);
+					String otherWorkerIP = ipBase + "." + String.valueOf(i + 1 + 1 + ipShift); //  + ":" + String.valueOf(gigaspacesPort);
 					String otherWorkerSpaceAddress = "jini://" + otherWorkerIP + "/*/client";
 					otherWorkerTSName.add(otherWorkerSpaceAddress);
 				}
 			}
-			DistributedMatrixWorkerThread<GigaSpaceProxy> wThread = new DistributedMatrixWorkerThread<GigaSpaceProxy>(localSpaceAddress, workerID, masterSpaceAddress, otherWorkerTSName, matrixSize, numberOfWorkers, GigaSpaceProxy.class);       
-	        wThread.start();
+		//	DistributedMatrixWorkerNetThread<GigaSpaceProxy> wThread = new DistributedMatrixWorkerNetThread<GigaSpaceProxy>(localSpaceAddress, workerID, masterSpaceAddress, otherWorkerTSName, matrixSize, numberOfWorkers, GigaSpaceProxy.class);       
+	    //    wThread.start();
+			new DistributedMatrixWorker<GigaSpaceProxy>(localSpaceAddress, workerID, masterSpaceAddress, otherWorkerTSName, matrixSize, numberOfWorkers, GigaSpaceProxy.class).start();
 		}
         
         System.out.println("process creation is finished");
@@ -119,7 +124,6 @@ public class GigaspacesMatrixNetwork {
 	}
 
 }
-
 
 
 

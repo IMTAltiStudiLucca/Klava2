@@ -18,18 +18,16 @@ public class DistributedSortWorker<T extends ITupleSpace> {
     ArrayList<Object> otherWorkerTSName;
     ArrayList<ITupleSpace> workerGSs;
     Integer workerID;
-    int matrixSize;
     Integer numberOfWorkers;
 	Class tupleSpaceClass;
 	
     
-    public DistributedSortWorker(Object _localGSPath, Integer _workerID, Object _masterTSName, ArrayList<Object> _otherWorkerTSName, int matrixSize, int numberOfWorkers, Class<?> tupleSpaceClass)
+    public DistributedSortWorker(Object _localGSPath, Integer _workerID, Object _masterTSName, ArrayList<Object> _otherWorkerTSName, int numberOfWorkers, Class<?> tupleSpaceClass)
     {
     	this.localGSPath = _localGSPath;
     	this.masterTSName = _masterTSName;
     	this.otherWorkerTSName = _otherWorkerTSName;
     	this.workerID = _workerID;
-    	this.matrixSize = matrixSize;
     	this.tupleSpaceClass = tupleSpaceClass;
     	this.numberOfWorkers = numberOfWorkers; 	
     }

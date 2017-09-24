@@ -1,4 +1,4 @@
-package app.launcher.sorting.implementations;
+package app.launcher.sorting;
 
 import app.operations.TupleOperations;
 import app.skeleton.sorting.v1.DistributedSortMaster;

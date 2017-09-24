@@ -211,6 +211,12 @@ public class GigaSpaceProxy extends ITupleSpace
         return gigaspace;
 	}
 	
+	public static void startGigaspaceServer(String serverName)
+	{
+        UrlSpaceConfigurer configurer = new UrlSpaceConfigurer(serverName);      
+        GigaSpace gigaspace = new GigaSpaceConfigurer(configurer).create();
+	}
+	
 	public static void destroySpace(Object space)
 	{
 		String spaceName = (String) space;

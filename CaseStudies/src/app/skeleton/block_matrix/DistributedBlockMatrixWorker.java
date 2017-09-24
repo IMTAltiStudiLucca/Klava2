@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 import app.operations.TupleOperations;
-import common.CustomPair;
 import common.TupleLogger;
 import interfaces.ITupleSpace;
 import profiler.DProfiler;

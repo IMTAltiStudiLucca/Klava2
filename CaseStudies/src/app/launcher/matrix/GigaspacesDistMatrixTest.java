@@ -1,11 +1,9 @@
-package app.launcher.matrix.implementations;
+package app.launcher.matrix;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 
-import app.launcher.sorting.implementations.GigaspacesImpDistSortTest;
 import app.skeleton.matrix.DistributedMatrixMasterThread;
 import app.skeleton.matrix.DistributedMatrixWorkerThread;
 import proxy.gigaspaces.GigaSpaceProxy;

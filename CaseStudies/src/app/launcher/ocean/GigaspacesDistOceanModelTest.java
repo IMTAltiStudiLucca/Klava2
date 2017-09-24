@@ -1,4 +1,4 @@
-package app.launcher.ocean.implementations;
+package app.launcher.ocean;
 
 import java.io.IOException;
 import java.util.ArrayList;

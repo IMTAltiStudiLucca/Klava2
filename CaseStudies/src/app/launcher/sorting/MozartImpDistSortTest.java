@@ -1,4 +1,4 @@
-package app.launcher.sorting.implementations;
+package app.launcher.sorting;
 
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
@@ -80,7 +80,7 @@ public class MozartImpDistSortTest {
 				if(i != n)
 					nodesExceptThatNodeList.add(masterPortNumber + 1 + n);
 			}
-			DistributedSortWorkerThread<MozartProxy> workerThread = new DistributedSortWorkerThread<MozartProxy>(masterPortNumber + 1 + i, i, masterPortNumber, nodesExceptThatNodeList, 0, numberOfWorkers, MozartProxy.class);
+			DistributedSortWorkerThread<MozartProxy> workerThread = new DistributedSortWorkerThread<MozartProxy>(masterPortNumber + 1 + i, i, masterPortNumber, nodesExceptThatNodeList, numberOfWorkers, MozartProxy.class);
 			workerThread.start();
 			try {
 				Thread.sleep(50);

@@ -5,7 +5,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
 
-import app.launcher.matrix.implementations.GetDataFromDockers;
+import app.launcher.matrix.GetDataFromDockers;
 import app.operations.TupleOperations;
 import common.CustomPair;
 import common.TupleLogger;

@@ -7,11 +7,11 @@ import java.util.Vector;
 
 import app.operations.TupleOperations;
 import app.skeleton.matrix.DistributedMatrixMaster;
-import app.skeleton.sorting.v2.DistributedSortMasterV2;
+import app.skeleton.sorting.v1.MegreSort;
+import apps.sorting.QSort;
 import common.TupleLogger;
 import interfaces.ITupleSpace;
 import profiler.DProfiler;
-import proxy.gigaspaces.QSort;
 
 public class DistributedSortMasterV2<T extends ITupleSpace> {
 

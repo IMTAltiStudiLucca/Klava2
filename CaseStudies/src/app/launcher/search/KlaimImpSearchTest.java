@@ -1,4 +1,4 @@
-package app.launcher.search.implementations;
+package app.launcher.search;
 
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
@@ -12,9 +12,7 @@ import app.skeleton.passwordsearch.DistributedSearchMasterThread;
 import app.skeleton.passwordsearch.DistributedSearchWorkerThread;
 import klava.KlavaException;
 import klava.PhysicalLocality;
-import klava.topology.ClientNode;
 import klava.topology.KlavaNode;
-import klava.topology.Net;
 import proxy.klaim.KlaimProxy;
 
 public class KlaimImpSearchTest {

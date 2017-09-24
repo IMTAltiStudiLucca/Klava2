@@ -1,4 +1,4 @@
-package app.launcher.search.implementations;
+package app.launcher.search;
 
 import java.io.IOException;
 import java.security.MessageDigest;

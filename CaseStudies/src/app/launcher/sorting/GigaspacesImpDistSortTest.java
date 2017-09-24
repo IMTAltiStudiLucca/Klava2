@@ -1,4 +1,4 @@
-package app.launcher.sorting.implementations;
+package app.launcher.sorting;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -104,7 +104,7 @@ public class GigaspacesImpDistSortTest {
 					otherWorkerTSName.add(otherWorkerSpaceAddress);
 				}
 			}
-			DistributedSortWorkerThread<GigaSpaceProxy> wThread = new DistributedSortWorkerThread<GigaSpaceProxy>(workerSpaceAddress, workerID, masterSpaceAddress, otherWorkerTSName, 0, numberOfWorkers, GigaSpaceProxy.class);       
+			DistributedSortWorkerThread<GigaSpaceProxy> wThread = new DistributedSortWorkerThread<GigaSpaceProxy>(workerSpaceAddress, workerID, masterSpaceAddress, otherWorkerTSName, numberOfWorkers, GigaSpaceProxy.class);       
 	        wThread.start();
 		}
 
@@ -139,7 +139,7 @@ public class GigaspacesImpDistSortTest {
 				if(i != k)
 					otherWorkerTSName.add(allWorkers.get(k));
 			}
-			DistributedSortWorkerThread<GigaSpaceProxy> wThread = new DistributedSortWorkerThread<GigaSpaceProxy>(allWorkers.get(i), i, masterServerPath, otherWorkerTSName, 0, numberOfWorkers, GigaSpaceProxy.class);       
+			DistributedSortWorkerThread<GigaSpaceProxy> wThread = new DistributedSortWorkerThread<GigaSpaceProxy>(allWorkers.get(i), i, masterServerPath, otherWorkerTSName, numberOfWorkers, GigaSpaceProxy.class);       
 	        wThread.start();
 		}
 

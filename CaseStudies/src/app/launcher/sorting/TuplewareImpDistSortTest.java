@@ -1,28 +1,21 @@
-package app.launcher.sorting.implementations;
+package app.launcher.sorting;
 
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 
-import org.mikado.imc.common.IMCException;
-
 import app.skeleton.sorting.v1.DistributedSortMasterThread;
 import app.skeleton.sorting.v1.DistributedSortWorkerThread;
 import common.DataGeneration;
-import klava.KlavaException;
-import klava.PhysicalLocality;
-import klava.topology.ClientNode;
-import klava.topology.KlavaNode;
-import klava.topology.Net;
-import proxy.klaim.KlaimProxy;
+import proxy.tupleware.TuplewareProxy;
 
 
-public class KlaimImpDistSortTest {
+public class TuplewareImpDistSortTest {
 
 	
-	public static void main(String[] args) throws NoSuchAlgorithmException, IOException, IMCException, KlavaException {
+	public static void main(String[] args) throws NoSuchAlgorithmException, IOException {
 		
-		int numberOfElements = 10000;
+		int numberOfElements = 1000000;
 		int numberOfWorkers = 5;
     	
 		// for network version
@@ -42,7 +35,7 @@ public class KlaimImpDistSortTest {
 			isMaster = Boolean.valueOf(args[2]);
 			ipAddress = args[3];
 		}
-		
+			
 		double thresholdPercent = 0.01;
 		// load data
         String data = null;
@@ -54,36 +47,25 @@ public class KlaimImpDistSortTest {
 		}
 
 		int[] dataArray = DataGeneration.fromStringToIntArray(data);
-//        int threshold = (int)(Double.valueOf(dataArray.length) * thresholdPercent);
+        int threshold = (int)(Double.valueOf(dataArray.length) * thresholdPercent);
 		
 		// begin test scenario
-		beginScenario(numberOfWorkers, dataArray, ipAddress, isMaster);
+        beginScenario(numberOfWorkers, dataArray);
 		
 		System.out.println("done");
 	}
 
 	
-	private static void beginScenario(int numberOfWorkers, int[] dataToSort, String ipAddress, Boolean isMaster) throws IMCException, KlavaException
-	{	
-		// create server physical locality
-		PhysicalLocality serverPLoc = new PhysicalLocality("tcp-127.0.0.1:6001");
-		KlavaNode serverNode = new KlavaNode(serverPLoc);
-		
-		// create all worker nodes
-		ArrayList<KlavaNode> workerNodes = new ArrayList<KlavaNode>();
-		for(int i = 0; i< numberOfWorkers; i++ )
-		{
-			PhysicalLocality workPLoc = new PhysicalLocality("tcp-127.0.0.1:600" + (i+2));
-			KlavaNode workerNode = new KlavaNode(workPLoc);
-			workerNodes.add(workerNode);
-		}
+	private static void beginScenario(int numberOfWorkers, int[] dataToSort)
+	{			
+		int portNumber = 6001;
 		
 		// start master thread
-		DistributedSortMasterThread<KlaimProxy> mThread = new DistributedSortMasterThread<KlaimProxy>(serverNode, numberOfWorkers, dataToSort, KlaimProxy.class); 
+		DistributedSortMasterThread<TuplewareProxy> mThread = new DistributedSortMasterThread<TuplewareProxy>(portNumber, numberOfWorkers, dataToSort, TuplewareProxy.class); 
         mThread.start();
         
         try {
-			Thread.sleep(1000);
+			Thread.sleep(2000);
 		} catch (InterruptedException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
@@ -93,10 +75,10 @@ public class KlaimImpDistSortTest {
 		ArrayList<Object> allWorkers = new ArrayList<Object>();		
 		for(int i=0; i < numberOfWorkers; i++)
 		{
-			DistributedSortWorkerThread<KlaimProxy> wThread = new DistributedSortWorkerThread<KlaimProxy>(workerNodes.get(i), i, serverNode, allWorkers, 0, numberOfWorkers, KlaimProxy.class);       
+			DistributedSortWorkerThread<TuplewareProxy> wThread = new DistributedSortWorkerThread<TuplewareProxy>(portNumber + 1 + i, i, 6001, allWorkers, numberOfWorkers, TuplewareProxy.class);       
 	        wThread.start();
 	        try {
-				Thread.sleep(100);
+				Thread.sleep(300);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
