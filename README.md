@@ -11,12 +11,17 @@ KLAIM (the Kernel Language for Agents Interaction and Mobility) is an extension 
 * DataGenerator. An auxiliary project with classes for the creation of test data.
 * CaseStudies. The project includes a number of case studies that are used to compare several tuple space implementations (GigaSpaces, KLAIM, MozartSpace, Tupleware). Each case study is written as a skeleton: the code remains the same for all the
 tuple space implementations and testing tuple space implementation should be passed as a parameter of the case study. There are following case studies:
-  * Password search
-  * Sorting
-  * Ocean mode simulation
-  * Matrix multiplication (row-wise and block-wise)
+  * Password search;
+  * Sorting;
+  * Ocean mode simulation;
+  * Matrix multiplication (row-wise and block-wise).
+  
+  Packages stated from **app.skeleton** contain the code of skeletons for each case study, whereas packages started from **app.launcher** contain the code certain tuple space implementations are used and have to be used to start tests.
 * KlavaReplication. The project contains classes for the introduction of replication in Klava.
 * LocalTupleSpaceTesting. The project includes a number test to evaluate performances of several implementations of local tuple space based on hash tables, trees, the indexing.
 * TSProxies. The project includes a number of proxies for different tuple space implementation. Each proxy implements interface ITupleSpace. 
-* klaim_sourse. The project contains a current version of Klava's source code.
+* klaim_source. The project contains a current version of Klava's source code.
+
+Also:
+* docker. The folder contains files to build a docker image (based on Ubuntu 14.04) to run experiments for case studies Matrix multiplication and Sorting. To use it is necessary to put a corresponding JAR file to a folder "jar".
 
