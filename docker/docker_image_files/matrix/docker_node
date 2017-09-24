@@ -1,0 +1,39 @@
+
+#
+#
+#  XAP Dockerfile
+#
+#
+
+
+FROM ubuntu:14.04
+
+#RUN echo nameserver 8.8.8.8 >> /etc/resolv.conf
+
+
+RUN echo nameserver 8.8.8.8 >> /etc/resolv.conf \
+	&& apt-get -y update \
+	&& apt-get install -y software-properties-common
+
+RUN echo nameserver 8.8.8.8 >> /etc/resolv.conf \
+	&& add-apt-repository ppa:webupd8team/java && apt-get update
+
+RUN echo "oracle-java8-installer shared/accepted-oracle-license-v1-1 select true" | debconf-set-selections
+RUN echo "oracle-java8-installer shared/accepted-oracle-license-v1-1 seen true" | debconf-set-selections
+
+RUN echo nameserver 8.8.8.8 >> /etc/resolv.conf \
+	&& apt-get install -y oracle-java8-installer \
+	&& apt-get install zip unzip
+
+
+#In the Dockerfile, add a local file using ADD, e g
+ADD jar usr/java_jar/
+
+
+
+#CMD ["bash"]
+
+#CMD cat /proc/meminfo
+
+EXPOSE 4174
+CMD cd /usr/java_jar && java -jar gig_matrix_net.jar 50 5 172.17.0

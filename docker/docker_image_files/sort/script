@@ -1,0 +1,9 @@
+create an image:
+cd /home/vb/docker_creator/matrix
+docker build -f docker_node --no-cache=false -t java/gig_node .
+
+
+start containers:
+/home/vb/docker_creator/matrix/sh_scripts
+
+bash create_containers.sh
