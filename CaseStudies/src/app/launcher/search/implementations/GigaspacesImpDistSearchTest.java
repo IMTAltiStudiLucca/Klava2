@@ -1,12 +1,12 @@
-package apps.dist.search.implementations;
+package app.launcher.search.implementations;
 
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 
-import app.dist.passwordsearch.DistributedSearchMasterThread;
-import app.dist.passwordsearch.DistributedSearchWorkerThread;
+import app.skeleton.passwordsearch.DistributedSearchMasterThread;
+import app.skeleton.passwordsearch.DistributedSearchWorkerThread;
 import common.DataGeneration;
 import proxy.gigaspaces.GigaSpaceProxy;
 

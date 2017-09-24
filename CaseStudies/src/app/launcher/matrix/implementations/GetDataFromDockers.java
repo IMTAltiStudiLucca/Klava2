@@ -1,4 +1,4 @@
-package apps.dist.matrix.implementations;
+package app.launcher.matrix.implementations;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;

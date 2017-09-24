@@ -1,7 +1,7 @@
-package apps.dist.sorting.implementations;
+package app.launcher.sorting.implementations;
 
-import app.dist.sorting.DistributedSortMaster;
 import app.operations.TupleOperations;
+import app.skeleton.sorting.v1.DistributedSortMaster;
 import proxy.gigaspaces.GigaSpaceProxy;
 
 public class GigaspaceLauncherTest {

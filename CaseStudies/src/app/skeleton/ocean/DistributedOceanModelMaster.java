@@ -1,4 +1,4 @@
-package app.dist.ocean;
+package app.skeleton.ocean;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;

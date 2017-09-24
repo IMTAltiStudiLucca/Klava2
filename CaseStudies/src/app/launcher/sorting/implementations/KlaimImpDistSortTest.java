@@ -1,4 +1,4 @@
-package apps.dist.sorting.implementations;
+package app.launcher.sorting.implementations;
 
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
@@ -6,8 +6,8 @@ import java.util.ArrayList;
 
 import org.mikado.imc.common.IMCException;
 
-import app.dist.sorting.DistributedSortMasterThread;
-import app.dist.sorting.DistributedSortWorkerThread;
+import app.skeleton.sorting.v1.DistributedSortMasterThread;
+import app.skeleton.sorting.v1.DistributedSortWorkerThread;
 import common.DataGeneration;
 import klava.KlavaException;
 import klava.PhysicalLocality;

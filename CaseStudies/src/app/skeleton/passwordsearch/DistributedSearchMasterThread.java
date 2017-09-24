@@ -1,4 +1,4 @@
-package app.dist.passwordsearch;
+package app.skeleton.passwordsearch;
 
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;

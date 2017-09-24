@@ -1,4 +1,4 @@
-package app.dist.passwordsearch;
+package app.skeleton.passwordsearch;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -24,7 +24,7 @@ public class DistributedSearchMaster<T extends ITupleSpace> {
 	
     public final static String completeStatus = "complete"; 
 	        
-    public static Object[] searchTupleTemplate = new Object[]{String.class, String.class, String.class};
+    public static Object[] searchTupleTemplate = new Object[]{String.class, String.class, String.class, String.class};
     
     public DistributedSearchMaster(Object masterTSAddress, int numberOfElements, int numberOfWorkers, Class tupleSpaceClass) {
     	this.masterTSAddress = masterTSAddress;
@@ -61,7 +61,7 @@ public class DistributedSearchMaster<T extends ITupleSpace> {
         System.out.println("Master: all worker loaded data");
 
         // spread the current test key
-        TupleOperations.writeTuple(masterTS, masterTS, masterTS.formTuple("SearchTuple_ttf", new Object[]{"search", "master_key", DProfiler.testKey}, DistributedSearchMaster.searchTupleTemplate), true, false);
+        TupleOperations.writeTuple(masterTS, masterTS, masterTS.formTuple("SearchTuple_ttf", new Object[]{"search", "profiling", "master_key", DProfiler.testKey}, DistributedSearchMaster.searchTupleTemplate), true, false);
        
         // create tasks and write it into local tuple space of the master
         int numberOfTasks = 100;
@@ -72,7 +72,7 @@ public class DistributedSearchMaster<T extends ITupleSpace> {
 
         // send to worker - "finish its work"
         for(int i =0; i< numberOfWorkers; i++) {
-        	TupleOperations.writeTuple(masterTS, masterTS, masterTS.formTuple("SearchTuple_tff", new Object[]{"search_task", "", completeStatus}, searchTupleTemplate), true, false);
+        	TupleOperations.writeTuple(masterTS, masterTS, masterTS.formTuple("SearchTuple_tff", new Object[]{"search_task", "hashed_value", "", completeStatus}, searchTupleTemplate), true, false);
         }
         TupleLogger.end("Master::TotalRuntime");
 
@@ -112,7 +112,7 @@ public class DistributedSearchMaster<T extends ITupleSpace> {
 		int workerCounter = 0;
         while (true) {
         	Thread.sleep(10);
-        	TupleOperations.takeTuple(masterTS, masterTS, masterTS.formTuple("SearchTuple_ttt", new Object[]{"search", "worker", "worker_ready"}, searchTupleTemplate), true, false);
+        	TupleOperations.takeTuple(masterTS, masterTS, masterTS.formTuple("SearchTuple_ttt", new Object[]{"search", "sync", "worker", "worker_ready"}, searchTupleTemplate), true, false);
         	workerCounter++;
         	if(workerCounter == numberOfWorkers)
         		break;     
@@ -130,7 +130,7 @@ public class DistributedSearchMaster<T extends ITupleSpace> {
 		workerCounter = 0;
         while (true) {
         	Thread.sleep(10);
-        	TupleOperations.takeTuple(masterTS, masterTS, masterTS.formTuple("SearchTuple_ttt", new Object[]{"search", "worker", "data_loaded"}, searchTupleTemplate), true, false);
+        	TupleOperations.takeTuple(masterTS, masterTS, masterTS.formTuple("SearchTuple_ttt", new Object[]{"search", "sync", "worker", "data_loaded"}, searchTupleTemplate), true, false);
         	workerCounter++;
         	if(workerCounter == numberOfWorkers)
         		break;     
@@ -162,7 +162,7 @@ public class DistributedSearchMaster<T extends ITupleSpace> {
         // put all tasks into tupleSpace
         for(int i = 0; i < tasks.size(); i++) {    	
         	TupleOperations.writeTuple(masterTS, masterTS, 
-        			masterTS.formTuple("SearchTuple_tff", new Object[]{"search_task", tasks.get(i), "not_processed"}, searchTupleTemplate), true, false);
+        			masterTS.formTuple("SearchTuple_tff", new Object[]{"search_task", "hashed_value", tasks.get(i), "not_processed"}, searchTupleTemplate), true, false);
         }
         System.out.println("Master: tasks were created");
 	}
@@ -178,7 +178,7 @@ public class DistributedSearchMaster<T extends ITupleSpace> {
 		Integer counter= 0;
 		ArrayList<Object[]> foundTuples = new ArrayList<Object[]>();
         while (foundTuples.size() != numberOfTasks) {        	
-        	Object foundTupleTemplate = masterTS.formTuple("SearchTuple_tff", new Object[]{"foundValue", null, null}, searchTupleTemplate);
+        	Object foundTupleTemplate = masterTS.formTuple("SearchTuple_tff", new Object[]{"results", "found_value", null, null}, searchTupleTemplate);
         	Object foundTupleObject = TupleOperations.takeTuple(masterTS, masterTS, foundTupleTemplate, true, false);
         	Object[] foundTuple = masterTS.tupleToObjectArray("SearchTuple", foundTupleObject);
         	foundTuples.add(foundTuple);

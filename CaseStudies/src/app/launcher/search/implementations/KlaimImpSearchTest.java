@@ -1,4 +1,4 @@
-package apps.dist.search.implementations;
+package app.launcher.search.implementations;
 
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
@@ -8,8 +8,8 @@ import java.util.Hashtable;
 
 import org.mikado.imc.common.IMCException;
 
-import app.dist.passwordsearch.DistributedSearchMasterThread;
-import app.dist.passwordsearch.DistributedSearchWorkerThread;
+import app.skeleton.passwordsearch.DistributedSearchMasterThread;
+import app.skeleton.passwordsearch.DistributedSearchWorkerThread;
 import klava.KlavaException;
 import klava.PhysicalLocality;
 import klava.topology.ClientNode;

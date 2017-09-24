@@ -1,4 +1,4 @@
-package apps.dist.matrix.implementations;
+package app.launcher.matrix.implementations;
 
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
@@ -6,8 +6,8 @@ import java.util.ArrayList;
 
 import org.mikado.imc.common.IMCException;
 
-import app.dist.matrix.DistributedMatrixMasterThread;
-import app.dist.matrix.DistributedMatrixWorkerThread;
+import app.skeleton.matrix.DistributedMatrixMasterThread;
+import app.skeleton.matrix.DistributedMatrixWorkerThread;
 import klava.KlavaException;
 import klava.PhysicalLocality;
 import klava.topology.ClientNode;

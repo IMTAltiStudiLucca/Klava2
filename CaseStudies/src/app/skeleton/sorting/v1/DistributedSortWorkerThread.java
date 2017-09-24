@@ -1,4 +1,4 @@
-package app.dist.sorting;
+package app.skeleton.sorting.v1;
 
 import java.util.ArrayList;
 

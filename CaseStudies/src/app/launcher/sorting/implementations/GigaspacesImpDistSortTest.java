@@ -1,4 +1,4 @@
-package apps.dist.sorting.implementations;
+package app.launcher.sorting.implementations;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -8,8 +8,8 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Scanner;
 
-import app.dist.sorting.DistributedSortMasterThread;
-import app.dist.sorting.DistributedSortWorkerThread;
+import app.skeleton.sorting.v1.DistributedSortMasterThread;
+import app.skeleton.sorting.v1.DistributedSortWorkerThread;
 import common.DataGeneration;
 import proxy.gigaspaces.GigaSpaceProxy;
 

@@ -1,4 +1,4 @@
-package apps.dist.ocean.implementations;
+package app.launcher.ocean.implementations;
 
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
@@ -6,8 +6,8 @@ import java.util.ArrayList;
 
 import org.mikado.imc.common.IMCException;
 
-import app.dist.ocean.DistributedOceanModelMasterThread;
-import app.dist.ocean.DistributedOceanModelWorkerThread;
+import app.skeleton.ocean.DistributedOceanModelMasterThread;
+import app.skeleton.ocean.DistributedOceanModelWorkerThread;
 import klava.KlavaException;
 import klava.PhysicalLocality;
 import klava.topology.ClientNode;

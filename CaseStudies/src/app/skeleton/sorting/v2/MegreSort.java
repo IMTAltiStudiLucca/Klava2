@@ -1,4 +1,4 @@
-package app.skeleton.sorting.v1;
+package app.skeleton.sorting.v2;
 
 import java.util.Vector;
 

@@ -1,4 +1,4 @@
-package app.dist.ocean;
+package app.skeleton.ocean;
 
 import java.io.IOException;
 import java.util.ArrayList;
