@@ -19,6 +19,9 @@ tuple space implementations and testing tuple space implementation should be pas
   Packages stated from **app.skeleton** contain the code of skeletons for each case study, whereas packages started from **app.launcher** contain the code certain tuple space implementations are used and have to be used to start tests.
 * KlavaReplication. The project contains classes for the introduction of replication in Klava.
 * LocalTupleSpaceTesting. The project includes a number test to evaluate performances of several implementations of local tuple space based on hash tables, trees, the indexing.
+* ReplicationCaseStudy. The project presents case studies designed for klaim nodes that supports the replication based on sharing groups. There are the following case studies:
+  * Mobile Detectors;
+  * Smart home.
 * TSProxies. The project includes a number of proxies for different tuple space implementation. Each proxy implements interface ITupleSpace. 
 * klaim_source. The project contains a current version of Klava's source code.
 
