@@ -57,12 +57,10 @@ public class ProcessTuplePackRE  extends Thread {
                // here we can use the same channel or use standard NIOSender
                NIOSender sender = tcpnioEntity.getSender(tPacket.lastSenderIPAddress);
                eTupleOperation previousOp = tPacket.operation;
-               if(result)
-               {
+               if(result) {
                    tPacket.tuple = tPacket.tuple;
                    tPacket.operation = eTupleOperation.TUPLEBACK;
-               } else
-               {
+               } else {
                    // just send that the tuple is absent
                    tPacket.operation = eTupleOperation.TUPLEABSENT;
                }
@@ -120,11 +118,11 @@ public class ProcessTuplePackRE  extends Thread {
                if (ownerAddressStr.equals(localIPAddressStr)) {
                    tPacket.tuple = tPacket.tuple;
                    tPacket.operation = eTupleOperation.TUPLEBACK;
-                   sender.write(tPacket);    
+                   sender.write(tPacket);
                    return;
-               } else {
+               } else if (tPacket.operation == eTupleOperation.IN_REPL){
                    
-                   // ask owner of the tuple
+                   // ask owner of the tuple for withdrawing operation
                    TupleSpaceRepliOperations.askOwner((RepliTuple)tPacket.tuple, tPacket.blocking, ownerAddressStr, tPacket.lastSenderIPAddress, tcpnioEntity);
                                          
                    // this processing is finished, the listener waits for the response
@@ -137,8 +135,7 @@ public class ProcessTuplePackRE  extends Thread {
                return;
            }                                          
        
-       } else if(tPacket.operation == eTupleOperation.ASK_READ_OWNER ||
-               tPacket.operation == eTupleOperation.ASK_IN_OWNER) {
+       } else if(tPacket.operation == eTupleOperation.ASK_IN_OWNER) {
            
            boolean result = false;           
            result = doReadOrIN(tupleSpace, tPacket.tuple, tPacket.blocking, (tPacket.operation == eTupleOperation.ASK_IN_OWNER));

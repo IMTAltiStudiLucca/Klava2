@@ -53,6 +53,7 @@ import klava.new_communication.TuplePack.eTupleOperation;
 import klava.new_communication.TupleSpaceInteraction;
 import klava.new_communication.TupleSpaceOperations;
 import klava.new_communication.TupleSpaceOperations.eOperationTypes;
+import klava.new_communication.TupleSpaceRepliKlaimOperations;
 import klava.new_communication.TupleSpaceRepliOperations;
 import klava.proto.AcceptRegisterState;
 import klava.proto.ExecutionEngine;
@@ -89,7 +90,7 @@ public class KlavaNode extends Node {
     Hashtable<String, List<Object>> settings = null;
     boolean newCommunicationPart = true;
     
-    public enum eReplicationType {NONE, TOPOLOGY_REPLICATION, SIMPLE_REPLICATION};
+    public enum eReplicationType {NONE, TOPOLOGY_REPLICATION, REPLIKLAIM_REPLICATION};
 
     /**
      * The RoutingTable
@@ -181,6 +182,7 @@ public class KlavaNode extends Node {
 
     TupleSpaceOperations operationManager = null;
     TupleSpaceRepliOperations operationRepliManager = null;
+    TupleSpaceRepliKlaimOperations operationRepliKlaimManager = null;
     
     public KlavaNode(PhysicalLocality physLoc) {
         
@@ -204,6 +206,7 @@ public class KlavaNode extends Node {
             this.tcpnioEntity = new TCPNIOEntity(ipAddress, tupleSpace, replicationType);
             this.operationManager = new TupleSpaceOperations(eOperationTypes.ORDINARY, tupleSpace, newCommunicationPart, tcpnioEntity, physLoc);
             this.operationRepliManager = new TupleSpaceRepliOperations(eOperationTypes.ORDINARY, tupleSpace, newCommunicationPart, tcpnioEntity, physLoc);
+            this.operationRepliKlaimManager = new TupleSpaceRepliKlaimOperations(eOperationTypes.ORDINARY, tupleSpace, tcpnioEntity, physLoc);
         } catch (IOException | InstantiationException | IllegalAccessException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -1790,7 +1793,7 @@ public class KlavaNode extends Node {
     
     
     /*
-     * for replication
+     * for static replication taking into account delays in the network
      */
     public void outR(RepliTuple tuple, List<Locality> localities) throws KlavaException
     {
@@ -1799,22 +1802,22 @@ public class KlavaNode extends Node {
     
     public void inR(RepliTuple tuple, List<Locality> localities) throws KlavaException, InterruptedException
     {
-        operationRepliManager.getData(tuple, true, true, localities, (Locality)this.nodePhysicalLocality);
+        operationRepliManager.getData(tuple, true, true, localities, this.nodePhysicalLocality);
     }
     
     public boolean in_nbR(RepliTuple tuple, List<Locality> localities) throws KlavaException, InterruptedException
     {
-        return operationRepliManager.getData(tuple, false, true, localities, (Locality)this.nodePhysicalLocality);
+        return operationRepliManager.getData(tuple, false, true, localities, this.nodePhysicalLocality);
     }
     
     public void readR(RepliTuple tuple, List<Locality> localities) throws KlavaException, InterruptedException
     {
-        operationRepliManager.getData(tuple, true, false, localities, (Locality)this.nodePhysicalLocality);
+        operationRepliManager.getData(tuple, true, false, localities, this.nodePhysicalLocality);
     }
     
     public boolean read_nbR(RepliTuple tuple, List<Locality> localities) throws KlavaException, InterruptedException
     {
-        return operationRepliManager.getData(tuple, false, false, localities, (Locality)this.nodePhysicalLocality);
+        return operationRepliManager.getData(tuple, false, false, localities, this.nodePhysicalLocality);
     }
     
     public void readR(RepliTuple tuple) throws KlavaException, InterruptedException
@@ -1835,6 +1838,63 @@ public class KlavaNode extends Node {
     public boolean in_nbR(RepliTuple tuple) throws KlavaException, InterruptedException
     {
         return operationRepliManager.getDataLocally(tuple, false, true);
+    }
+    
+    
+    
+    /*
+     * for static replication like RepliKlaim
+     */
+    public void outRK(RepliTuple tuple, List<Locality> localities) throws KlavaException
+    {
+    	operationRepliKlaimManager.out(tuple, localities);
+    }
+    
+    public void inRK(RepliTuple tuple, Locality locality) throws KlavaException, InterruptedException
+    {
+    	operationRepliKlaimManager.getData(tuple, true, true, locality, this.nodePhysicalLocality);
+    }
+    
+    public boolean in_nbRK(RepliTuple tuple, Locality locality) throws KlavaException, InterruptedException
+    {
+        return operationRepliKlaimManager.getData(tuple, false, true, locality, this.nodePhysicalLocality);
+    }
+    
+    public void readRK(RepliTuple tuple, Locality locality) throws KlavaException, InterruptedException
+    {
+    	operationRepliKlaimManager.getData(tuple, true, false, locality, this.nodePhysicalLocality);
+    }
+    
+    public boolean read_nbRK(RepliTuple tuple, Locality locality) throws KlavaException, InterruptedException
+    {
+        return operationRepliKlaimManager.getData(tuple, false, false, locality, this.nodePhysicalLocality);
+    }
+    
+    public void readRK(RepliTuple tuple) throws KlavaException, InterruptedException
+    {
+    	operationRepliKlaimManager.getDataLocally(tuple, true, false);
+    }
+    
+    public void inRK(RepliTuple tuple) throws KlavaException, InterruptedException
+    {
+    	operationRepliKlaimManager.getDataLocally(tuple, true, true);
+    }
+    
+    public boolean read_nbRK(RepliTuple tuple) throws KlavaException, InterruptedException
+    {
+        return operationRepliKlaimManager.getDataLocally(tuple, false, false);
+    }
+    
+    public boolean in_nbRK(RepliTuple tuple) throws KlavaException, InterruptedException
+    {
+        return operationRepliKlaimManager.getDataLocally(tuple, false, true);
+    }
+    
+    /**
+     * Stop all threads of nodes
+     */
+    public void stopNode() {
+    	tcpnioEntity.stop();
     }
 
 }

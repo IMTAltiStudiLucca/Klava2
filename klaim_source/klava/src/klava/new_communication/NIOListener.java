@@ -25,7 +25,7 @@ public class NIOListener {
 	// thread for listening
     private Thread ioThread; 
     // object for stopping ioThread
-    boolean stopFLag = false;
+    Boolean stopFLag = false;
     
     // thread pool
     final int threadPoolSize = 10;
@@ -73,12 +73,12 @@ public class NIOListener {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}                            // This runs for a long time
-                    ioThread = null;
+                    //ioThread = null;
                 }   // end run
             };  // end runnable
             
 			ioThread = new Thread( run, this.getClass().getName() );
-			//ioThread.start();
+			ioThread.start();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -95,7 +95,7 @@ public class NIOListener {
 	public void shutdown()
 	{
 		stopFLag = true;
-		//ioThread.interrupt();
+		executor.shutdownNow();
 	}
 	
 	
@@ -105,7 +105,10 @@ public class NIOListener {
 	private void processingLoop() throws IOException
 	{    
         while(true) {
-            int count = acceptSelector.select();
+ //       	System.out.println("wait");
+            int count = acceptSelector.select(1000);
+            
+            // stop the thread
             if(stopFLag == true)
             	break;
             

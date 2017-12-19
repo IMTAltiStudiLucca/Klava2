@@ -4,6 +4,6 @@
 package klava.replication;
 
 public enum eConsistencyLevel {
-    NONE, WEAK, STRONG
+    WEAK, STRONG
 }
 

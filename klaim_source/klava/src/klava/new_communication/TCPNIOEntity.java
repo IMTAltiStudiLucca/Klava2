@@ -45,7 +45,7 @@ public class TCPNIOEntity
 	    this.ipAddress = ipAddress;
 	    this.tupleSpace = tupleSpace;
 		nioListener = new NIOListener(ipAddress.getPort(), this, replicationType != eReplicationType.NONE);
-		nioListener.start();
+	//	nioListener.start();
 	}
 	
 	public NIOSender getSender(IPAddress ipAddress)
@@ -71,6 +71,11 @@ public class TCPNIOEntity
 	        nexOperationID = threadName*10000 + operationSequenceID++;
         }
 	    return nexOperationID;
+	}
+	
+	public void stop() {
+		nioListener.shutdown();
+		
 	}
 	
 }
