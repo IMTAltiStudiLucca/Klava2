@@ -58,6 +58,7 @@ public class NIOListener {
 	    
 		try {
 			ssChannel = ServerSocketChannel.open();
+			ssChannel.socket().setReceiveBufferSize(65536);
 			ssChannel.bind(new InetSocketAddress(port));
 			ssChannel.configureBlocking(false);
 			
@@ -155,11 +156,9 @@ public class NIOListener {
 	 * implements non-blocking reading where first the data are read and after the new thread for data processing starts
 	 */
     private void nonBlockingReading(SocketChannel readChannel) throws IOException {
-       
-        double startTime = System.nanoTime()/1000000d;
-        
+               
         // read the buffer
-        ByteBuffer buffer = ByteBuffer.allocate(2048);
+        ByteBuffer buffer = ByteBuffer.allocate(8192);
         buffer.clear();
 
         ConnectionBuffer connectionBuffer = connections.get(readChannel.getRemoteAddress().toString());
@@ -244,8 +243,7 @@ public class NIOListener {
                 }
             }            
             buffer.clear();
-            
-            double endTime = System.nanoTime()/1000000d;
+           
         }              
     }
     

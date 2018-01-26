@@ -5,82 +5,94 @@ import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 
+
 public class NIOSender
 {
-		//int port;
-		SocketChannel sChannel;
-		//ObjectOutputStream  ooStream;
-		//public int port;
-		public NIOSender(IPAddress ipAddress)
+
+    SocketChannel sChannel;
+    
+    IPAddress ipAddress;
+    
+    /*  
+    public NIOSender(IPAddress ipAddress)
+    {
+        this.ipAddress = ipAddress;
+    }
+    
+    // should be synchronous
+    public synchronized void write(Object obj)
+    {
+        String receiverAddress = ipAddress.getFullAddress();
+        try {
+            JVMSharedChannels.addData(receiverAddress, (IPack)obj);
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }*/
+    
+   		
+		public NIOSender(IPAddress ipAddress) throws IOException
 		{
-		    //this.port = port;
-			try {
-				sChannel = SocketChannel.open();
-				sChannel.socket().setTcpNoDelay(true);
-		        sChannel.configureBlocking(true);
-		        if (sChannel.connect(new InetSocketAddress(ipAddress.getIp(), ipAddress.getPort()))) 
-		        {
-		            // do something or just wait for an exception
-		        }
-	        
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}		
+		    this.ipAddress = ipAddress;
+			sChannel = SocketChannel.open();
+			sChannel.socket().setTcpNoDelay(true);
+			sChannel.socket().setSendBufferSize(65536);
+	        sChannel.configureBlocking(true);
+	        if (sChannel.connect(new InetSocketAddress(ipAddress.getIp(), ipAddress.getPort()))) 
+	        {
+	            // do something or just wait for an exception
+	        }	
 		}
+		
+
 		
 		// should be synchronous
 		public synchronized void write(Object obj)
         {
-            if(obj != null)
-            {
+            if(obj != null) {
                 try {
+                    double startTime = System.nanoTime()/1000000d;
                     byte[] bytes = TuplePack.serializeObject(obj);
                     
-                    
+                    double endTime = System.nanoTime()/1000000d;
+                
                     byte[] withDelimeter = new byte[bytes.length + NIOListener.delimeter.length];
                     System.arraycopy(bytes, 0, withDelimeter, 0, bytes.length);
                     System.arraycopy(NIOListener.delimeter, 0, withDelimeter, bytes.length, NIOListener.delimeter.length);
                     
+                    
+                    double diff = endTime - startTime;
+                    
+                    //System.out.println("bytes "+ bytes.length);
+                    //System.out.println("time "+ diff);
+                    
                     //TuplePack.deserializeObject(bytes);
-                //  System.out.println("size " + bytes.length);
-                    
-                    
-                    ByteBuffer buffer = ByteBuffer.wrap(withDelimeter);
-                    sChannel.write(buffer);
-                    
+                    //System.out.println("size " + bytes.length);
+                     
+                 //   ByteBuffer buffer = ByteBuffer.wrap(withDelimeter);
+                //   sChannel.write(buffer);     
 
-                    /*ByteBuffer buffer = ByteBuffer.allocate(withDelimeter.length);
+                    ByteBuffer buffer = ByteBuffer.allocate(withDelimeter.length);
                     buffer.clear();
                     buffer.put(withDelimeter);
 
                     buffer.flip();
-
                     while(buffer.hasRemaining()) {
                         sChannel.write(buffer);
-                    }*/
+                    }
                     
-                    
-                 /*   ByteBuffer buf = ByteBuffer.allocate(withDelimeter.length);
-                    buf.clear();
-                    buf.put(withDelimeter);
 
-                    buf.flip();
-
-                    while(buf.hasRemaining()) {
-                        sChannel.write(buf);
-                    }*/
-
- //                   shutdown();
                 } catch (IOException e) {
                     // TODO Auto-generated catch block
                     
                     System.err.println("error writeObject");
                     e.printStackTrace();
                 }
-            }      
+            }
+            
+            
         }
-		
 		
 		public void shutdown()
 		{
@@ -91,5 +103,8 @@ public class NIOSender
 				e.printStackTrace();
 			}
 		}
-			
+		
+	
+	
+		
 }

@@ -56,7 +56,13 @@ public class TCPNIOEntity
 	        return senderTable.get(address);
 	    } else
 	    {
-	        NIOSender newSender = new NIOSender(ipAddress);
+	        NIOSender newSender = null;
+            try {
+                newSender = new NIOSender(ipAddress);
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
 	        senderTable.put(address, newSender);
 	        return newSender;
 	    }

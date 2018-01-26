@@ -3,6 +3,7 @@
  */
 package klava.new_communication;
 
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -30,14 +31,14 @@ public class ProcessTuplePackRE  extends Thread {
     public void run() {
         try {
             processPacket(tPacket, tupleSpace, tcpnioEntity);
-        } catch (InterruptedException e) {
+        } catch (InterruptedException | IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
     }
     
     
-    public static void processPacket(TuplePack tPacket, TupleSpace tupleSpace, TCPNIOEntity tcpnioEntity) throws InterruptedException
+    public static void processPacket(TuplePack tPacket, TupleSpace tupleSpace, TCPNIOEntity tcpnioEntity) throws InterruptedException, IOException
     {             
        if(tPacket.operation == eTupleOperation.OUT || tPacket.operation == eTupleOperation.OUT_REPL) {
            tupleSpace.out(tPacket.tuple);

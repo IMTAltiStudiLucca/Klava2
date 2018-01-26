@@ -5,13 +5,16 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Hashtable;
+import java.util.List;
 
 import org.mikado.imc.common.IMCException;
 
 import app.skeleton.passwordsearch.DistributedSearchMasterThread;
 import app.skeleton.passwordsearch.DistributedSearchWorkerThread;
+import klaim.localspace.TupleSpaceHashtable;
 import klava.KlavaException;
 import klava.PhysicalLocality;
+import klava.index_space.IndexedTupleSpace;
 import klava.topology.KlavaNode;
 import proxy.klaim.KlaimProxy;
 
@@ -54,21 +57,37 @@ public class KlaimImpSearchTest {
 	{			
 		// create server physical locality
 		PhysicalLocality serverPLoc = new PhysicalLocality("tcp-127.0.0.1:6001");
-		KlavaNode serverNode = new KlavaNode(serverPLoc); 
+		KlavaNode serverNode = new KlavaNode(serverPLoc, TupleSpaceHashtable.class); 
 		
-		Hashtable<String, ArrayList<Object>> settings = new Hashtable<>();
-		
-		// settings for TupleSpaceSQLiteDB
-	    ArrayList<Object> searchTupleTemplate = new ArrayList<Object>(Arrays.asList(String.class, String.class, String.class));
-		settings.put("SearchTuple", searchTupleTemplate);
 
+		Hashtable<String, List<Object>> settings = new Hashtable<>();
+				
+		/*List<Object> templates = new ArrayList<Object>();
+		templates.add(new Boolean[]{true, true, true, true});
+		settings.put("SearchTuple_ttt", templates);
+		templates = new ArrayList<Object>();
+		templates.add(new Boolean[]{true, true, false, false});
+		settings.put("SearchTuple_tff", templates);
+		templates = new ArrayList<Object>();
+		templates.add(new Boolean[]{true, true, true, false});
+		settings.put("SearchTuple_ttf", templates);
+		*/
+		
+		List<Object> templates = new ArrayList<Object>();
+		templates.add(new Boolean[]{true, true, true, true});
+		templates.add(new Boolean[]{true, true, false, false});
+		templates.add(new Boolean[]{true, true, true, false});
+		settings.put("SearchTuple_tttt", templates);
+		
+		serverNode.setSettings(settings);
 		
 		// create all worker nodes
 		ArrayList<KlavaNode> workerNodes = new ArrayList<KlavaNode>();
 		for(int i = 0; i< numberOfWorkers; i++ )
 		{
 			PhysicalLocality workPLoc = new PhysicalLocality("tcp-127.0.0.1:600" + (i+2));
-			KlavaNode workerNode = new KlavaNode(workPLoc); 
+			KlavaNode workerNode = new KlavaNode(workPLoc, TupleSpaceHashtable.class); 
+			workerNode.setSettings(settings);
 			workerNodes.add(workerNode);
 		}
 		

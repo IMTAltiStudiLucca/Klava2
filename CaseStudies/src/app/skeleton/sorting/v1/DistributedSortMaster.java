@@ -117,13 +117,15 @@ public class DistributedSortMaster<T extends ITupleSpace> {
 		String executionFolder = System.getProperty("user.dir");
 		System.out.println(executionFolder);
 		TupleLogger.writeAllToFile(DProfiler.testKey);
-		TupleLogger.printStatistics(executionFolder, DProfiler.testKey,
-				new String[] { "take::remote", "take::local", "write::remote", "write::local", "takeE::local",
-						"takeE::remote", "read::l-r", "nodeVisited", "Master::TotalRuntime" });
+//		TupleLogger.printStatistics(executionFolder, DProfiler.testKey,
+//				new String[] { "take::remote", "take::local", "write::remote", "write::local", "takeE::local",
+//						"takeE::remote", "read::l-r", "nodeVisited", "Master::TotalRuntime" });
 
 		System.out.println("Master process finished...Shutting down...");
 
-		Thread.sleep(600000);
+		Thread.sleep(10000);
+		System.exit(0);
+		
 	}
 
 	public T getInstanceOfT(Class<T> aClass) {

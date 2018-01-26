@@ -57,7 +57,7 @@ public class DistributedSearchWorker<T extends ITupleSpace> {
         // connect to the master and to the other workers
     	T masterTS = initializeMasterAndWorkers();
     	
-    	TupleOperations.writeTuple(masterTS, localTS, localTS.formTuple("SearchTuple_ttt", new Object[]{"search", "sync", "worker", "worker_ready"}, DistributedSearchMaster.searchTupleTemplate), false, true);  	
+    	TupleOperations.writeTuple(masterTS, localTS, localTS.formTuple("SearchTuple_tttt", new Object[]{"search", "sync", "worker", "worker_ready"}, DistributedSearchMaster.searchTupleTemplate), false, true);  	
 
     	// load data to the local tuple space
     	loadDataTable(localTS);
@@ -65,11 +65,11 @@ public class DistributedSearchWorker<T extends ITupleSpace> {
     	System.out.println("Worker " + workerID + ": data loaded");
     	
     	// notify master that worker is ready to receive tasks
-    	TupleOperations.writeTuple(masterTS, localTS, localTS.formTuple("SearchTuple_ttt", new Object[]{"search", "sync", "worker", "data_loaded"}, DistributedSearchMaster.searchTupleTemplate), false, true);
+    	TupleOperations.writeTuple(masterTS, localTS, localTS.formTuple("SearchTuple_tttt", new Object[]{"search", "sync", "worker", "data_loaded"}, DistributedSearchMaster.searchTupleTemplate), false, true);
     	
     	// get test key of the execution
-    	Object tupleWithTestKeyObject = TupleOperations.readTuple(masterTS, localTS, localTS.formTuple("SearchTuple_ttf", new Object[]{"search", "profiling", "master_key", null}, DistributedSearchMaster.searchTupleTemplate), false, true);
-    	Object[] tupleWithTestKey = localTS.tupleToObjectArray("SearchTuple", tupleWithTestKeyObject);
+    	Object tupleWithTestKeyObject = TupleOperations.readTuple(masterTS, localTS, localTS.formTuple("SearchTuple_tttt", new Object[]{"search", "profiling", "master_key", null}, DistributedSearchMaster.searchTupleTemplate), false, true);
+    	Object[] tupleWithTestKey = localTS.tupleToObjectArray("SearchTuple_tttt", tupleWithTestKeyObject);
     	DProfiler.testKey = (String)tupleWithTestKey[2];
     	
     	
@@ -81,8 +81,12 @@ public class DistributedSearchWorker<T extends ITupleSpace> {
         String hashedValue = (String)searchTaskTuple[2];
         String status = (String)searchTaskTuple[3];
         
+        System.out.println(status);
+        
         while(!DistributedSearchWorker.completeStatus.equals(status))
         {
+        	  System.out.println(hashedValue);
+        	  
         	// search for the tuple with given hashed value
         	Object foundTupleObject = searchLoop(localTS, workerTSs, hashedValue);
         	Object[] foundTuple = localTS.tupleToObjectArray("SearchTuple", foundTupleObject);
@@ -90,7 +94,7 @@ public class DistributedSearchWorker<T extends ITupleSpace> {
         	System.out.println("Worker " + workerID + ": found the password");
     		
         	// send found password to the master   		
-        	TupleOperations.writeTuple(masterTS, localTS, localTS.formTuple("SearchTuple_tff", new Object[]{"results", "found_value", (String)foundTuple[1], (String)foundTuple[2]}, DistributedSearchMaster.searchTupleTemplate), false, true);
+        	TupleOperations.writeTuple(masterTS, localTS, localTS.formTuple("SearchTuple_tttt", new Object[]{"results", "found_value", (String)foundTuple[1], (String)foundTuple[2]}, DistributedSearchMaster.searchTupleTemplate), false, true);
     		
     		// search and retrieve the next task
         	searchTaskTuple = searchNextTask(localTS, masterTS);
@@ -137,7 +141,7 @@ public class DistributedSearchWorker<T extends ITupleSpace> {
     	{
     		String[] elements = dataArray[i].split(",");
     		// write data to the local tuple space
-        	TupleOperations.writeTuple(localTS, localTS, localTS.formTuple("SearchTuple_ttf", new Object[]{"hashSet", elements[0], elements[1], "reserved"}, DistributedSearchMaster.searchTupleTemplate), true, true);
+        	TupleOperations.writeTuple(localTS, localTS, localTS.formTuple("SearchTuple_tttt", new Object[]{"hashSet", elements[0], elements[1], "reserved"}, DistributedSearchMaster.searchTupleTemplate), true, true);
     	}
 	}
 	
@@ -148,7 +152,7 @@ public class DistributedSearchWorker<T extends ITupleSpace> {
 	 * @return
 	 */
 	private Object[] searchNextTask(T localTS, T masterTS) {
-		Object searchTaskTupleTemplate = localTS.formTuple("SearchTuple_tff", new Object[]{"search_task", "hashed_value", null, null}, DistributedSearchMaster.searchTupleTemplate);
+		Object searchTaskTupleTemplate = localTS.formTuple("SearchTuple_tttt", new Object[]{"search_task", "hashed_value", null, null}, DistributedSearchMaster.searchTupleTemplate);
     	Object searchTaskTupleObject = TupleOperations.takeTuple(masterTS, localTS, searchTaskTupleTemplate, false, true);
     	Object[] searchTaskTuple = localTS.tupleToObjectArray("SearchTuple", searchTaskTupleObject);
 		return searchTaskTuple;
@@ -195,7 +199,8 @@ public class DistributedSearchWorker<T extends ITupleSpace> {
      */
     static Object search(ITupleSpace localTS, ArrayList<ITupleSpace> workerTSs, String hashedValue, boolean firstTime) throws InterruptedException
     {
-    	Object template = localTS.formTuple("SearchTuple_ttf", new Object[]{"hashSet", hashedValue, null, "reserved"}, DistributedSearchMaster.searchTupleTemplate);    	
+    	//Object template = localTS.formTuple("SearchTuple_tttt", new Object[]{"hashSet", hashedValue, null, "reserved"}, DistributedSearchMaster.searchTupleTemplate);    	
+    	Object template = localTS.formTuple("SearchTuple_tttt", new Object[]{"hashSet", hashedValue, null, null}, DistributedSearchMaster.searchTupleTemplate);  
     	if(firstTime)
     		TupleLogger.incCounter("nodeVisited");
 
