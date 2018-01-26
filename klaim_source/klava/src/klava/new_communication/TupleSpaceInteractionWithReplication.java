@@ -40,13 +40,6 @@ public class TupleSpaceInteractionWithReplication
             operationResult = read_inRepliOperations(tuple, blocking, false, tPack, nioSender);    
         }
         
-//        else if(operation == eTupleOperation.OUT) {
-//            nioSender.write(tPack);
-//            operationResult = true;
-//        } 
-//        else if(operation == eTupleOperation.READ || operation == eTupleOperation.IN) {
-//            operationResult = read_inOperations(tuple, blocking, tPack, nioSender);
-//        }
         return operationResult;
     }
 
@@ -94,51 +87,6 @@ public class TupleSpaceInteractionWithReplication
         return operationResult;
     }
    
-    private boolean read_inOperations(Tuple tuple, boolean blocking, TuplePack tPack, NIOSender nioSender)
-            throws InterruptedException {
-        boolean operationResult = false;
-               
-        long nextOperationID = tcpnioEntity.getNextOperationSequenceID();
-        tPack.operationID = nextOperationID;
-        
-        // it is necessary to wait for the response
-        setSynchObject(tcpnioEntity, nextOperationID);
-        
-        // send the packet with remote operation
-        nioSender.write(tPack);
-
-        while (true)
-        {
-            tcpnioEntity.dataPairLock.lock();
-            tcpnioEntity.responseIsBack.await();              
-
-            NullableTuplePack resultPack = tcpnioEntity.responseMap.get(nextOperationID);
-
-            if(resultPack != null)
-            {                
-                if(resultPack.getPacket().operation == eTupleOperation.TUPLEABSENT)
-                    operationResult = false;
-                else  if(resultPack.getPacket().operation == eTupleOperation.TUPLEBACK)
-                {
-                    tuple.copy_tuple(resultPack.getPacket().tuple);
-                    operationResult = true;
-                } else {
-                    System.err.println("TupleSpaceInteraction: unknown state");
-                }
-                
-                tcpnioEntity.responseMap.remove(nextOperationID);
-                break;
-            } 
-            else
-                System.err.println("TupleSpaceInteraction: resultPack == null");
-
-            tcpnioEntity.dataPairLock.unlock();
-                         
-        }
-        return operationResult;
-    }
-    
-    
     public static void setSynchObject(TCPNIOEntity tcpnioEntity, long nextOperationID) {
         // it is necessary to wait for the response
         tcpnioEntity.dataPairLock.lock();

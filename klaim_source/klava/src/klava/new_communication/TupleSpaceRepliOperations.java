@@ -41,7 +41,7 @@ public class TupleSpaceRepliOperations
         this.nodePhysicalLocality = nodePhysicalLocality;
         this.tcpnioEntity = tcpnioEntity;
     }
-     
+    
     public void out(RepliTuple tuple, List<Locality> localitiesToShare) throws KlavaException
     {
         int numberOfReplics = localitiesToShare.size() > 1 ? (int)(Math.log(localitiesToShare.size() / Math.log(2.))) : 1;
@@ -62,19 +62,17 @@ public class TupleSpaceRepliOperations
         int tiedLocalitiesCode = TupleSpaceRepliOperations.getTiedLocationsCode(localitiesToShare);
         tuple.setTiedLocalityGroup(String.valueOf(tiedLocalitiesCode));
         
-        switch(tuple.getConsistencyLevel())
-        {
-            case NONE:
+        switch(tuple.getConsistencyLevel()) {
             case WEAK:
-                sendTupleInParallel(tuple, replicationLocalities, false);
+                sendTupleInParallel(tuple, replicationLocalities, false, nodePhysicalLocality, tcpnioEntity);
                 break;
             case STRONG:
-                sendTupleInParallel(tuple, replicationLocalities, true);
+                sendTupleInParallel(tuple, replicationLocalities, true, nodePhysicalLocality, tcpnioEntity);
                 break;
         }
     }
     
-    public boolean getData(RepliTuple template, boolean blocking, boolean remove, List<Locality> localitiesToShare, Locality currentLocality) throws KlavaException, InterruptedException
+    public boolean getData(RepliTuple template, boolean blocking, boolean remove, List<Locality> localitiesToShare, PhysicalLocality currentLocality) throws KlavaException, InterruptedException
     {
         int numberOfReplics = localitiesToShare.size() > 1 ? (int)(Math.log(localitiesToShare.size() / Math.log(2.))) : 1;
         GraphData graphData = GraphData.loadGraph("data\\all_pairs_hops_sf100.txt", "data\\all_pairs_distance_sf100.txt");
@@ -92,7 +90,7 @@ public class TupleSpaceRepliOperations
         int tiedLocalitiesCode = TupleSpaceRepliOperations.getTiedLocationsCode(localitiesToShare);
         template.setTiedLocalityGroup(String.valueOf(tiedLocalitiesCode));
         
-        RepliTuple foundTuple = getTuple(template, blocking, remove, closestReplicationNode);
+        RepliTuple foundTuple = getTuple(template, blocking, remove, closestReplicationNode, currentLocality, tcpnioEntity);
         return (foundTuple != null);
     }
     
@@ -101,11 +99,12 @@ public class TupleSpaceRepliOperations
     {          
         // read locally
         template.setTiedLocalityGroup(SeparableTupleSpace.ALL);
-        boolean result = getTupleLocally(template, blocking, remove);
+        boolean result = getTupleLocally(template, blocking, remove, tcpnioEntity);
         return result;
     }
     
-    public void sendTupleInParallel(RepliTuple tuple, List<Locality> destinationList, boolean waitForAccomplishment) throws KlavaException
+    protected static void sendTupleInParallel(RepliTuple tuple, List<Locality> destinationList, boolean waitForAccomplishment, 
+    		PhysicalLocality currentLocality, TCPNIOEntity tcpnioEntity) throws KlavaException
     {
         // create a ip-list of replication nodes
         List<String> destIPs = new ArrayList<>();
@@ -118,20 +117,56 @@ public class TupleSpaceRepliOperations
             if(tuple.getOwner().equals(destination.toString()))
                 tuple.setLocationList(destIPs);
             
-            if (!TupleSpaceOperations.checkLocalDestination(destination, nodePhysicalLocality))
+            if (!TupleSpaceOperations.checkLocalDestination(destination, currentLocality))
             {
                 PhysicalLocality desPhyLoc = new PhysicalLocality(destination.toString()); 
-                TupleSpaceInteractionWithReplication interaction = new TupleSpaceInteractionWithReplication(nodePhysicalLocality, desPhyLoc, tcpnioEntity);
+                TupleSpaceInteractionWithReplication interaction = new TupleSpaceInteractionWithReplication(currentLocality, desPhyLoc, tcpnioEntity);
                 try {
                     boolean result = interaction.tupleOperation(eTupleOperation.OUT_REPL, tuple, false, 0);
                 } catch (InterruptedException e) {
                   e.printStackTrace();
                 }
             } else
-                tupleSpace.out(tuple);
+            	tcpnioEntity.tupleSpace.out(tuple);
         }
     }
     
+    protected static RepliTuple getTuple(RepliTuple template, boolean blocking, boolean remove, Locality replicationNode, PhysicalLocality localLocality, TCPNIOEntity tcpnioEntity) throws KlavaException, InterruptedException
+    {
+        boolean result = false;
+        if (!TupleSpaceOperations.checkLocalDestination(replicationNode, localLocality))
+        {
+            PhysicalLocality desPhyLoc = new PhysicalLocality(replicationNode.toString()); 
+            TupleSpaceInteractionWithReplication interaction = new TupleSpaceInteractionWithReplication(localLocality, desPhyLoc, tcpnioEntity);
+            if (remove)
+                result = interaction.tupleOperation(eTupleOperation.IN_REPL, template, blocking, 0);
+            else
+                result = interaction.tupleOperation(eTupleOperation.READ_REPL, template, blocking, 0);
+        } else {
+            // get locally
+            result = getTupleLocally(template, blocking, remove, tcpnioEntity);
+        }
+        if (result)
+            return template;
+
+        return null;
+    }
+    
+    protected static boolean getTupleLocally(RepliTuple template, boolean blocking, boolean remove, TCPNIOEntity tcpnioEntity) throws InterruptedException
+    {
+        boolean result = ProcessTuplePackRE.doReadOrIN(tcpnioEntity.tupleSpace, template, blocking, (remove == true));
+        
+        if(result && template != null) {    
+            String ownerAddressStr = ((RepliTuple)template).getOwner();
+            
+            // only for the withdrawing operation
+            if (remove && ownerAddressStr.equals(tcpnioEntity.ipAddress.returnFullAddress()))
+            	TupleSpaceRepliOperations.askOwner(template, blocking, ownerAddressStr, tcpnioEntity.ipAddress, tcpnioEntity);
+        }
+        
+        return result;
+    }
+/*    
     private RepliTuple getTuple(RepliTuple template, boolean blocking, boolean remove, Locality replicationNode) throws KlavaException, InterruptedException
     {
         boolean result = false;
@@ -161,17 +196,18 @@ public class TupleSpaceRepliOperations
         {    
             String ownerAddressStr = ((RepliTuple)template).getOwner();
             
-            if (ownerAddressStr.equals(tcpnioEntity.ipAddress.returnFullAddress()))
-                askOwner(template, blocking, ownerAddressStr, tcpnioEntity.ipAddress, tcpnioEntity);
+            // only for the withdrawing operation
+            if (remove && ownerAddressStr.equals(tcpnioEntity.ipAddress.returnFullAddress()))
+            	TupleSpaceRepliOperations.askOwner(template, blocking, ownerAddressStr, tcpnioEntity.ipAddress, tcpnioEntity);
         }
         
         return result;
-    }
+    }*/
 
-    public static void askOwner(RepliTuple tupleToCheck, boolean blocking, String ownerAddressStr,IPAddress ipAddressToReturnResult,
+    public static void askOwner(RepliTuple tupleToCheck, boolean blocking, String ownerAddressStr, IPAddress ipAddressToReturnResult,
             TCPNIOEntity tcpnioEntity) {
 
-        TuplePack askOwnerPack = new TuplePack(eTupleOperation.ASK_READ_OWNER, tupleToCheck, blocking, 0);  
+        TuplePack askOwnerPack = new TuplePack(eTupleOperation.ASK_IN_OWNER, tupleToCheck, blocking, 0);  
         IPAddress ownerIPAddress = IPAddress.parseAddress(ownerAddressStr);
          
         // set the address where to send a result
@@ -225,7 +261,7 @@ public class TupleSpaceRepliOperations
         return localities;
     }
 
-    private static int getTiedLocationsCode(List<Locality> localities)
+    protected static int getTiedLocationsCode(List<Locality> localities)
     {
         StringBuffer buf = new StringBuffer(localities.size());
         for(int i=0; i<localities.size(); i++)

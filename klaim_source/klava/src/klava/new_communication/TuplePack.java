@@ -16,7 +16,7 @@ import klava.Tuple;
 
 public class TuplePack implements Serializable  
 {
-    public enum eTupleOperation {READ, IN, OUT, EVAL, TUPLEBACK, TUPLEABSENT, OUT_REPL ,READ_REPL, IN_REPL, ASK_IN_OWNER, ASK_READ_OWNER, DELETE,
+    public enum eTupleOperation {READ, IN, OUT, EVAL, TUPLEBACK, TUPLEABSENT, OUT_REPL ,READ_REPL, IN_REPL, ASK_IN_OWNER, DELETE,
         OPERATION_COMPLETED};
 
     // type of the operation
